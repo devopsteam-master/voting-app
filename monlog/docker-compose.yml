@@ -1,0 +1,192 @@
+version: '3.9'
+networks:
+  redis:
+    name: redis_redis
+    external: true
+  pg_net:
+    name: pg_net
+    external: true
+  prometheus:
+    name: prometheus
+  minio:
+    name: minio
+    external: true
+  web_net:
+    name: web_net
+    external: true
+
+configs:
+  prometheus:
+    file: ./prometheus/prometheus.yml
+  grafana_datasource:
+    file: ./grafana/datasources/datasource.yml
+  loki:
+    file: ./loki/loki.yaml
+  promtail:
+    file: ./promtail/promtail.yaml
+
+services:
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    networks:
+      - redis
+      - prometheus
+    labels:
+      - "logging=promtail"
+
+  pgpool-exporter:
+    image: pgpool/pgpool2_exporter:latest
+    ports:
+      - 9719:9719
+    environment:
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DATABASE=postgres
+      - PGPOOL_SERVICE=db
+      - PGPOOL_SERVICE_PORT=5432
+    networks:
+      - pg_net
+      - prometheus
+
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter
+    networks:
+      - prometheus
+      - pg_net
+    labels:
+      - "logging=promtail"
+
+  prometheus:
+    image: prom/prometheus
+    hostname: prometheus
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    configs:
+      - source: prometheus
+        target: /etc/prometheus/prometheus.yml
+    networks:
+      - prometheus
+    ports:
+      - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    labels:
+      - "logging=promtail"
+
+  grafana:
+    image: grafana/grafana
+    hostname: grafana
+    ports:
+      - 3000:3000
+    networks:
+      - prometheus
+      - web_net
+    configs:
+      - source: grafana_datasource
+        target: /etc/grafana/provisioning/datasources/datasource.yml
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    # - GF_INSTALL_PLUGINS=${GRAFANA_INSTALL_PLUGINS}
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    # - GF_PATHS_DATA=/var/lib/grafana
+    labels:
+      - "logging=promtail"
+    deploy:
+      labels:
+        - "logging=promtail"
+        - "traefik.enable=true"
+        - "traefik.docker.network=web_net"
+        - "traefik.http.routers.grafana.entrypoints=http"
+        - "traefik.http.routers.grafana.rule=Host(`grafana.arman.fun`)"
+        - "traefik.http.routers.grafana.middlewares=https-redirect"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.grafana-secure.entrypoints=https"
+        - "traefik.http.routers.grafana-secure.rule=Host(`grafana.arman.fun`)"
+        - "traefik.http.routers.grafana-secure.tls=true"
+        - "traefik.http.routers.grafana-secure.tls.certresolver=mycert"
+        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
+ 
+  loki:
+    image: grafana/loki:latest
+    hostname: loki
+    ports:
+      - 3100:3100
+    networks:
+      - prometheus
+    command: -config.file=/loki.yaml
+    configs:
+      - source: loki
+        target: /loki.yaml
+    labels:
+      - "logging=promtail"
+
+  promtail:
+    image:  grafana/promtail:latest
+    hostname: promtail
+    configs:
+      - source: promtail
+        target: /etc/promtail/docker-config.yaml
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/docker-config.yaml
+    networks:
+      - prometheus
+    depends_on:
+      - loki
+    deploy:
+      mode: global
+    labels:
+      - "logging=promtail"
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    command: --disable_metrics=disk,udp,percpu #-docker_only #
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    deploy:
+      mode: global
+    networks:
+      - prometheus
+    labels:
+      - prometheus-job=cadvisor
+
+# minio:
+#   image: quay.io/minio/minio
+#   command: server --console-address ":9001" /data
+#   hostname: minio
+#   volumes:
+#     - ./minio_data:/data
+#   environment:
+#     MINIO_ROOT_USER: admin
+#     MINIO_ROOT_PASSWORD: admin123
+# #  networks:
+#  #   - loki
+#   ports:
+#     - 9001:9001
+#     - 9000:9000
+#
+# createbuckets:
+#   image: minio/mc
+#   container_name: bucket
+# #  networks:
+#  #   - loki
+# #  depends_on:
+# #    - minio
+#   entrypoint: >
+#     /bin/sh -c "
+#     /usr/bin/mc config host add myminio http://grafana.grafana.harimi.ir:9000 admin admin123;
+#     /usr/bin/mc rm -r --force myminio/loki2;
+#     /usr/bin/mc mb myminio/loki2;
+#     /usr/bin/mc policy set public myminio/loki2;
+#     exit 0;
+#     "
+
+

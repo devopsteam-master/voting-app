@@ -1,0 +1,87 @@
+version: '3.9'
+services:
+  redis-master:
+    image: bitnami/redis
+    networks:
+      - redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_REPLICATION_MODE=master
+    deploy:
+      replicas: 1
+    labels:
+      - "logging=promtail"
+
+  redis-slave1:
+    image: bitnami/redis
+    hostname: redis-slave1
+    networks:
+      - redis
+    depends_on:
+      - redis-master
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_REPLICATION_MODE=slave
+      - REDIS_MASTER_HOST=redis-master
+    deploy:
+      replicas: 1
+    labels:
+      - "logging=promtail"
+
+  redis-slave2:
+    image: bitnami/redis
+    hostname: redis-slave2
+    networks:
+      - redis
+    depends_on:
+      - redis-master
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_REPLICATION_MODE=slave
+      - REDIS_MASTER_HOST=redis-master
+    deploy:
+      replicas: 1
+    labels:
+      - "logging=promtail"
+
+  redis-sentinel:
+    image: bitnami/redis-sentinel
+    networks:
+      - redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS=3000
+      - REDIS_MASTER_HOST=redis-master
+    deploy:
+      mode: global
+    depends_on:
+      - redis-master
+#   healthcheck:
+#     test: ["CMD", "redis-sentinel", "--test", "mymaster"]
+#     interval: 10s
+#     timeout: 5s
+#     retries: 3
+    labels:
+      - "logging=promtail"
+
+  proxy:
+    image: haproxy:2.9.6-alpine
+    hostname: redis
+    configs:
+      - source: haproxy
+        target: /usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      - redis
+    depends_on:
+      - redis-sentinel
+#         condition: service_healthy
+    labels:
+      - "logging=promtail"
+
+networks:
+  redis:
+    driver: overlay
+
+configs:
+  haproxy:
+    file: ./haproxy.cfg

@@ -1,0 +1,65 @@
+version: '3.9'
+services:
+  vote:
+    image: dockersamples/examplevotingapp_vote
+    hostname: vote-server
+    command: python app.py
+#   ports:
+#     - 8081:80
+    networks:
+      - web_net
+      - redis
+    deploy:
+      labels:
+        - "logging=promtail"
+        - "traefik.enable=true"
+        - "traefik.docker.network=web_net"
+        - "traefik.http.routers.vote.entrypoints=http"
+        - "traefik.http.routers.vote.rule=Host(`vote.arman.fun`)"
+        - "traefik.http.routers.vote.middlewares=https-redirect"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.vote-secure.entrypoints=https"
+        - "traefik.http.routers.vote-secure.rule=Host(`vote.arman.fun`)"
+        - "traefik.http.routers.vote-secure.tls=true"
+        - "traefik.http.routers.vote-secure.tls.certresolver=mycert"
+        - "traefik.http.services.vote.loadbalancer.server.port=80"
+
+  worker:
+    image: dockersamples/examplevotingapp_worker
+    networks:
+      - redis
+      - pg_net
+    labels:
+      - "logging=promtail"
+
+  result:
+    image: dockersamples/examplevotingapp_result
+#   ports:
+#     - 8080:80
+    networks:
+      - web_net
+      - pg_net
+    deploy:
+      labels:
+        - "logging=promtail"
+        - "traefik.enable=true"
+        - "traefik.docker.network=web_net"
+        - "traefik.http.routers.result.entrypoints=http"
+        - "traefik.http.routers.result.rule=Host(`result.arman.fun`)"
+        - "traefik.http.routers.result.middlewares=https-redirect"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.result-secure.entrypoints=https"
+        - "traefik.http.routers.result-secure.rule=Host(`result.arman.fun`)"
+        - "traefik.http.routers.result-secure.tls=true"
+        - "traefik.http.routers.result-secure.tls.certresolver=mycert"
+        - "traefik.http.services.result.loadbalancer.server.port=80"
+
+networks:
+  web_net:
+    external: true
+  redis:
+    external: true
+    name: redis_redis
+  pg_net:
+    external: true
+    name: pg_net
