@@ -1,5 +1,7 @@
 version: '3.9'
 networks:
+  minio:
+    external: true
   redis:
     name: redis_redis
     external: true
@@ -115,6 +117,7 @@ services:
     ports:
       - 3100:3100
     networks:
+      - minio
       - prometheus
     command: -config.file=/loki.yaml
     configs:
@@ -157,36 +160,4 @@ services:
       - prometheus
     labels:
       - prometheus-job=cadvisor
-
-# minio:
-#   image: quay.io/minio/minio
-#   command: server --console-address ":9001" /data
-#   hostname: minio
-#   volumes:
-#     - ./minio_data:/data
-#   environment:
-#     MINIO_ROOT_USER: admin
-#     MINIO_ROOT_PASSWORD: admin123
-# #  networks:
-#  #   - loki
-#   ports:
-#     - 9001:9001
-#     - 9000:9000
-#
-# createbuckets:
-#   image: minio/mc
-#   container_name: bucket
-# #  networks:
-#  #   - loki
-# #  depends_on:
-# #    - minio
-#   entrypoint: >
-#     /bin/sh -c "
-#     /usr/bin/mc config host add myminio http://grafana.grafana.harimi.ir:9000 admin admin123;
-#     /usr/bin/mc rm -r --force myminio/loki2;
-#     /usr/bin/mc mb myminio/loki2;
-#     /usr/bin/mc policy set public myminio/loki2;
-#     exit 0;
-#     "
-
 
