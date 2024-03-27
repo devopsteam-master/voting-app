@@ -4,14 +4,11 @@ services:
     image: dockersamples/examplevotingapp_vote
     hostname: vote-server
     command: python app.py
-#   ports:
-#     - 8081:80
     networks:
       - web_net
       - redis
     deploy:
       labels:
-        - "logging=promtail"
         - "traefik.enable=true"
         - "traefik.docker.network=web_net"
         - "traefik.http.routers.vote.entrypoints=http"
@@ -29,19 +26,14 @@ services:
     networks:
       - redis
       - pg_net
-    labels:
-      - "logging=promtail"
 
   result:
     image: dockersamples/examplevotingapp_result
-#   ports:
-#     - 8080:80
     networks:
       - web_net
       - pg_net
     deploy:
       labels:
-        - "logging=promtail"
         - "traefik.enable=true"
         - "traefik.docker.network=web_net"
         - "traefik.http.routers.result.entrypoints=http"

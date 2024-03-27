@@ -9,8 +9,6 @@ services:
       - REDIS_REPLICATION_MODE=master
     deploy:
       replicas: 1
-    labels:
-      - "logging=promtail"
 
   redis-slave1:
     image: bitnami/redis
@@ -25,8 +23,6 @@ services:
       - REDIS_MASTER_HOST=redis-master
     deploy:
       replicas: 1
-    labels:
-      - "logging=promtail"
 
   redis-slave2:
     image: bitnami/redis
@@ -41,8 +37,6 @@ services:
       - REDIS_MASTER_HOST=redis-master
     deploy:
       replicas: 1
-    labels:
-      - "logging=promtail"
 
   redis-sentinel:
     image: bitnami/redis-sentinel
@@ -61,8 +55,6 @@ services:
 #     interval: 10s
 #     timeout: 5s
 #     retries: 3
-    labels:
-      - "logging=promtail"
 
   proxy:
     image: haproxy:2.9.6-alpine
@@ -75,8 +67,6 @@ services:
     depends_on:
       - redis-sentinel
 #         condition: service_healthy
-    labels:
-      - "logging=promtail"
 
 networks:
   redis:

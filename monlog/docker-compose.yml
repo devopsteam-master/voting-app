@@ -16,12 +16,6 @@ networks:
     external: true
 
 configs:
-# mimir-lb:
-#   file: ./mimir/nginx.conf
-# mimir-alertmanager:
-#   file: ./mimir/mimir-alertmanager.yaml
-# mimir-config:
-#   file: ./mimir/mimir.yaml
   prometheus:
     file: ./prometheus/prometheus.yml
   grafana_datasource:
@@ -31,19 +25,12 @@ configs:
   promtail:
     file: ./promtail/promtail.yaml
 
-#volumes:
-# mimir-data-1:
-# mimir-data-2:
-# mimir-data-3:
-
 services:
   redis-exporter:
     image: oliver006/redis_exporter:latest
     networks:
       - redis
       - prometheus
-    labels:
-      - "logging=promtail"
 
   pgpool-exporter:
     image: pgpool/pgpool2_exporter:latest
@@ -62,8 +49,6 @@ services:
     networks:
       - prometheus
       - pg_net
-    labels:
-      - "logging=promtail"
 
   prometheus:
     image: prom/prometheus
@@ -80,8 +65,6 @@ services:
       - 9090:9090
     command:
       - --config.file=/etc/prometheus/prometheus.yml
-    labels:
-      - "logging=promtail"
 
   grafana:
     image: grafana/grafana
@@ -95,14 +78,11 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
-    # - GF_INSTALL_PLUGINS=${GRAFANA_INSTALL_PLUGINS}
+      - GF_INSTALL_PLUGINS=${GRAFANA_INSTALL_PLUGINS}
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-    # - GF_PATHS_DATA=/var/lib/grafana
-    labels:
-      - "logging=promtail"
+      - GF_PATHS_DATA=/var/lib/grafana
     deploy:
       labels:
-        - "logging=promtail"
         - "traefik.enable=true"
         - "traefik.docker.network=web_net"
         - "traefik.http.routers.grafana.entrypoints=http"
@@ -125,8 +105,6 @@ services:
     configs:
       - source: loki
         target: /loki.yaml
-    labels:
-      - "logging=promtail"
 
   promtail:
     image:  grafana/promtail:latest
@@ -144,12 +122,10 @@ services:
       - loki
     deploy:
       mode: global
-    labels:
-      - "logging=promtail"
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor
-    command: --disable_metrics=disk,udp,percpu #-docker_only #
+    command: --disable_metrics=disk,udp,percpu
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -163,56 +139,3 @@ services:
     labels:
       - prometheus-job=cadvisor
 
-# mimir-lb:
-#   image: nginx:latest
-#   networks:
-#     - prometheus
-#   configs:
-#     - source: mimir-lb
-#       target: /etc/nginx/nginx.conf:ro
-#   depends_on:
-#     - "mimir-1"
-#     - "mimir-2"
-#     - "mimir-3"
-
-# mimir-1:
-#   image: grafana/mimir:latest
-#   command: ["-config.file=/etc/mimir.yaml"]
-#   hostname: mimir-1
-#   networks:
-#     - minio
-#   configs:
-#     - source: mimir-config
-#       target: /etc/mimir.yaml
-#     - source: mimir-alertmanager
-#       target: /etc/alertmanager-fallback-config.yaml
-#   volumes:
-#     - mimir-data-1:/data
-
-# mimir-2:
-#   image: grafana/mimir:latest
-#   command: ["-config.file=/etc/mimir.yaml"]
-#   hostname: mimir-2
-#   networks:
-#     - minio
-#   configs:
-#     - source: mimir-config
-#       target: /etc/mimir.yaml
-#     - source: mimir-alertmanager
-#       target: /etc/alertmanager-fallback-config.yaml
-#   volumes:
-#     - mimir-data-2:/data
-#       
-# mimir-3:
-#   image: grafana/mimir:latest
-#   command: ["-config.file=/etc/mimir.yaml"]
-#   hostname: mimir-3
-#   networks:
-#     - minio
-#   configs:
-#     - source: mimir-config
-#       target: /etc/mimir.yaml
-#     - source: mimir-alertmanager
-#       target: /etc/alertmanager-fallback-config.yaml
-#   volumes:
-#     - mimir-data-3:/data

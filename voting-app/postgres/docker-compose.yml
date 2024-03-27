@@ -17,8 +17,6 @@ services:
       - REPMGR_PARTNER_NODES=pg-0,pg-1
       - REPMGR_NODE_NAME=pg-0
       - REPMGR_NODE_NETWORK_NAME=pg-0
-    labels:
-      - "logging=promtail"
 
   pg-1:
     image: bitnami/postgresql-repmgr:16
@@ -37,8 +35,6 @@ services:
       - REPMGR_PARTNER_NODES=pg-0,pg-1
       - REPMGR_NODE_NAME=pg-1
       - REPMGR_NODE_NETWORK_NAME=pg-1
-    labels:
-      - "logging=promtail"
 
   pgpool:
     image: bitnami/pgpool:4
@@ -62,8 +58,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    labels:
-      - "logging=promtail"
 
 volumes:
   pg_0_data:
