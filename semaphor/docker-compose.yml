@@ -35,7 +35,7 @@ services:
       - "logging=promtail"
 #     - "logging_jobname=containerlogs"
       - "traefik.enable=true"
-      - "traefik.docker.network=web_net"
+      - "traefik.docker.network=traefik-net"
       - "traefik.http.routers.semaphore.entrypoints=http"
       - "traefik.http.routers.semaphore.rule=Host(`${VOTE_SUB}.${DOMAIN_ADDRESS}`)"
       - "traefik.http.routers.semaphore.middlewares=https-redirect"
@@ -49,9 +49,9 @@ services:
       - mysql 
     networks:
       - semaphore
-      - web_net
+      - traefik-net
 networks:
-  web_net:
+  traefik-net:
     external: true
   semaphore:
 volumes:

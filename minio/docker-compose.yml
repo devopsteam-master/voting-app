@@ -2,7 +2,7 @@ networks:
   minio:
     name: minio
     external: true
-  web_net:
+  traefik-net:
     external: true
 
 volumes:
@@ -14,7 +14,7 @@ services:
     hostname: minio-{{.Task.Slot}}
     networks:
       - minio
-      - web_net
+      - traefik-net
     environment:
       MINIO_ROOT_USER: admin
       MINIO_ROOT_PASSWORD: admin123
@@ -50,7 +50,7 @@ services:
       labels:
         - "logging=promtail"
         - "traefik.enable=true"
-        - "traefik.docker.network=web_net"
+        - "traefik.docker.network=traefik-net"
         - "traefik.http.routers.minio.entrypoints=http"
         - "traefik.http.routers.minio.rule=Host(`minio.arman.fun`)"
         - "traefik.http.routers.minio.middlewares=https-redirect"

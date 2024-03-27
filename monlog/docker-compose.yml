@@ -11,8 +11,8 @@ networks:
     external: true
   prometheus:
     name: prometheus
-  web_net:
-    name: web_net
+  traefik-net:
+    name: traefik-net
     external: true
 
 configs:
@@ -71,7 +71,7 @@ services:
     hostname: grafana
     networks:
       - prometheus
-      - web_net
+      - traefik-net
     configs:
       - source: grafana_datasource
         target: /etc/grafana/provisioning/datasources/datasource.yml
@@ -84,7 +84,7 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.docker.network=web_net"
+        - "traefik.docker.network=traefik-net"
         - "traefik.http.routers.grafana.entrypoints=http"
         - "traefik.http.routers.grafana.rule=Host(`grafana.arman.fun`)"
         - "traefik.http.routers.grafana.middlewares=https-redirect"
