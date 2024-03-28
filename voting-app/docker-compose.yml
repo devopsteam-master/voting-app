@@ -48,6 +48,7 @@ services:
 
 networks:
   traefik-net:
+    name: traefik-net
     external: true
   redis:
     external: true

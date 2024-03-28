@@ -1,0 +1,15 @@
+global:
+  resolve_timeout: 1m
+
+route:
+  receiver: 'Production_Environment'
+  group_wait: 1m
+  group_interval: 2m
+  repeat_interval: 10m
+  group_by: ['instance', 'severity']
+
+receivers:
+- name: 'Production_Environment'
+  webhook_configs:
+  - url: 'http://discord-alerts:9094'
+    send_resolved: true

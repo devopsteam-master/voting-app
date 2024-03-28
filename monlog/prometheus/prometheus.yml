@@ -1,3 +1,19 @@
+global:
+  scrape_interval:     30s
+  evaluation_interval: 30s
+  external_labels:
+      monitor: prom
+
+rule_files:
+  - /etc/prometheus/alerts/*.rules
+
+alerting:
+  alertmanagers:
+  - scheme: http
+    static_configs:
+    - targets:
+        - alertmanager:9093
+
 scrape_configs:
   - job_name: redis_exporter
     static_configs:

@@ -1,4 +1,3 @@
-version: '3.9'
 networks:
   minio:
     name: minio
@@ -16,14 +15,16 @@ networks:
     external: true
 
 configs:
-  prometheus:
-    file: ./prometheus/prometheus.yml
+# prometheus:
+#   file: ./prometheus/prometheus.yml
   grafana_datasource:
     file: ./grafana/datasources/datasource.yml
   loki:
     file: ./loki/loki.yaml
   promtail:
     file: ./promtail/promtail.yaml
+  alertmanager:
+    file: ./alertmanager/alertmanager.yml
 
 services:
   redis-exporter:
@@ -56,9 +57,10 @@ services:
     user: root
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    configs:
-      - source: prometheus
-        target: /etc/prometheus/prometheus.yml
+      - ./prometheus:/etc/prometheus
+#   configs:
+#     - source: prometheus
+#       target: /etc/prometheus/prometheus.yml
     networks:
       - prometheus
     ports:
@@ -75,12 +77,18 @@ services:
     configs:
       - source: grafana_datasource
         target: /etc/grafana/provisioning/datasources/datasource.yml
+    volumes:
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards/
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_INSTALL_PLUGINS=${GRAFANA_INSTALL_PLUGINS}
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_PATHS_DATA=/var/lib/grafana
+      - GF_NEWS_ENABLED=false
+      - GC_CHECK_FOR_UPDATES=false
+      - GF_REPORTING_ENABLED=false
+      - GF_SUPPORT_BUNDLES_ENABLED=false
     deploy:
       labels:
         - "traefik.enable=true"
@@ -123,8 +131,29 @@ services:
     deploy:
       mode: global
 
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+#   volumes:
+#     - alertmanager_data:/alertmanager
+    configs:
+      - source: alertmanager
+        target: /etc/alertmanager/alertmanager.yml
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    networks:
+      - prometheus
+
+  discord-alerts:
+    image: benjojo/alertmanager-discord
+    environment:
+      - DISCORD_WEBHOOK=https://discord.com/api/webhooks/1222636673222049792/C0rUyzrLUCyaOIxZgagddfze-wZcLZgYO-R5m4FypXm9lFPScQetB_PaAwT7Z5z34Mlr
+    networks:
+      - prometheus 
+
   cadvisor:
     image: gcr.io/cadvisor/cadvisor
+    hostname: cadvisor-{{.Node.ID}}
     command: --disable_metrics=disk,udp,percpu
     volumes:
       - /:/rootfs:ro
@@ -136,6 +165,4 @@ services:
       mode: global
     networks:
       - prometheus
-    labels:
-      - prometheus-job=cadvisor
 
