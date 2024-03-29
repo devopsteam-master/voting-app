@@ -2,12 +2,13 @@ version: '3.9'
 services:
   vote:
     image: dockersamples/examplevotingapp_vote
-    hostname: vote-server
+    hostname: vote-app-{{.Task.Slot}}
     command: python app.py
     networks:
       - traefik-net
       - redis
     deploy:
+      replicas: 2
       labels:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-net"
@@ -29,10 +30,12 @@ services:
 
   result:
     image: dockersamples/examplevotingapp_result
+    hostname: result-app-{{.Task.Slot}}
     networks:
       - traefik-net
       - pg_net
     deploy:
+      replicas: 2
       labels:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-net"

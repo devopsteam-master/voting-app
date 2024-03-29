@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   pg-0:
     image: bitnami/postgresql-repmgr:16
@@ -17,7 +16,10 @@ services:
       - REPMGR_PARTNER_NODES=pg-0,pg-1
       - REPMGR_NODE_NAME=pg-0
       - REPMGR_NODE_NETWORK_NAME=pg-0
-
+    deploy:
+      placement:
+        preferences:
+          - pg-0=true
   pg-1:
     image: bitnami/postgresql-repmgr:16
     hostname: pg-1
@@ -35,6 +37,10 @@ services:
       - REPMGR_PARTNER_NODES=pg-0,pg-1
       - REPMGR_NODE_NAME=pg-1
       - REPMGR_NODE_NETWORK_NAME=pg-1
+    deploy:
+      placement:
+        preferences:
+          - pg-1=true
 
   pgpool:
     image: bitnami/pgpool:4
@@ -59,13 +65,35 @@ services:
       timeout: 5s
       retries: 5
 
+  pg-backup:
+    image: postgres:alpine
+    volumes:
+      - pg_backup:/backup
+      - pg_0_data:/var/lib/postgresql/data
+    networks:
+      - pg_net
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    command: ["sh", "-c", "echo '0 0 * * * /usr/bin/pg_dump -U $$POSTGRES_USERNAME -d $$POSTGRES_DATABASE > /backup/backup.sql' > /etc/crontabs/root && crond -f -L /dev/stdout"]
+    depends_on:
+     - pgpool
+    deploy:
+      placement:
+        preferences:
+          - pg-0=true
+
 volumes:
   pg_0_data:
     driver: local
   pg_1_data:
     driver: local
+  pg_backup:
+    driver: local
 
 networks:
   pg_net:
+    external: true
     name: pg_net
     driver: overlay
