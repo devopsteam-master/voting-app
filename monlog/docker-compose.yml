@@ -27,30 +27,6 @@ configs:
     file: ./alertmanager/alertmanager.yml
 
 services:
-  redis-exporter:
-    image: oliver006/redis_exporter:latest
-    networks:
-      - redis
-      - prometheus
-
-  pgpool-exporter:
-    image: pgpool/pgpool2_exporter:latest
-    environment:
-      - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DATABASE=postgres
-      - PGPOOL_SERVICE=db
-      - PGPOOL_SERVICE_PORT=5432
-    networks:
-      - pg_net
-      - prometheus
-
-  postgres-exporter:
-    image: quay.io/prometheuscommunity/postgres-exporter
-    networks:
-      - prometheus
-      - pg_net
-
   prometheus:
     image: prom/prometheus
     hostname: prometheus
@@ -67,6 +43,10 @@ services:
       - 9090:9090
     command:
       - --config.file=/etc/prometheus/prometheus.yml
+    deploy:
+      placement:
+        constraints:
+           - node.hostname == sw1
 
   grafana:
     image: grafana/grafana
@@ -90,6 +70,9 @@ services:
       - GF_REPORTING_ENABLED=false
       - GF_SUPPORT_BUNDLES_ENABLED=false
     deploy:
+      placement:
+        constraints:
+           - node.hostname == sw1
       labels:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-net"
@@ -146,23 +129,8 @@ services:
 
   discord-alerts:
     image: benjojo/alertmanager-discord
-    environment:
-      - DISCORD_WEBHOOK=https://discord.com/api/webhooks/1222636673222049792/C0rUyzrLUCyaOIxZgagddfze-wZcLZgYO-R5m4FypXm9lFPScQetB_PaAwT7Z5z34Mlr
+#   environment:
+#     - DISCORD_WEBHOOK=https://discord.com/api/webhooks/1222636673222049792/C0rUyzrLUCyaOIxZgagddfze-wZcLZgYO-R5m4FypXm9lFPScQetB_PaAwT7Z5z34Mlr
     networks:
       - prometheus 
-
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor
-    hostname: cadvisor-{{.Node.ID}}
-    command: --disable_metrics=disk,udp,percpu
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:rw
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    deploy:
-      mode: global
-    networks:
-      - prometheus
 

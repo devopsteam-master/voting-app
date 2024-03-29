@@ -9,6 +9,9 @@ server:
   grpc_server_max_send_msg_size: 1048576000
   grpc_server_max_concurrent_streams: 10000
 
+limits:
+  max_label_names_per_series: 35
+
 memberlist:
   join_members: [mimir-1, mimir-2, mimir-3]
   advertise_addr: ADVERTISE_ADDR_REPLACE
