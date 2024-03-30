@@ -1,0 +1,56 @@
+services:
+  backup:
+    image: mazzolino/restic
+    environment:
+      BACKUP_CRON: "* * * * * *"
+      RESTIC_REPOSITORY: s3:http://minio:9000/back-up
+      RESTIC_PASSWORD: supersecret
+      RESTIC_BACKUP_SOURCES: /mnt/volumes
+      RESTIC_BACKUP_ARGS: -v
+      RESTIC_BACKUP_TAGS: postgres
+      TZ: Asia/Tehran
+      AWS_ACCESS_KEY_ID: jUATwbv7K6x1NfryfGpm
+      AWS_SECRET_ACCESS_KEY: ULUhIqZf2HOKt1mtHCfezopGeXFCnKOx73YT4XmT
+    networks:
+      - minio
+    volumes:
+      - pg_backup:/mnt/volumes:ro
+    deploy:
+      placement:
+        constraints:
+          - node.labels.pg == true
+
+# prune:
+#   image: mazzolino/restic
+#   hostname: docker
+#   environment:
+#     SKIP_INIT: "true"
+#     PRUNE_CRON: "0 0 4 * * *"
+#     RESTIC_FORGET_ARGS: --prune --keep-last 14 --keep-daily 1
+#     RESTIC_REPOSITORY: b2:my-repo:/restic
+#     RESTIC_PASSWORD: supersecret
+#     B2_ACCOUNT_ID: xxxxxxx
+#     B2_ACCOUNT_KEY: yyyyyyyy
+#     TZ: Europe/Berlin
+
+# check:
+#   image: mazzolino/restic
+#   hostname: docker
+#   environment:
+#     SKIP_INIT: "true"
+#     RUN_ON_STARTUP: "false"
+#     CHECK_CRON: "0 15 5 * * *"
+#     RESTIC_CHECK_ARGS: --read-data-subset=10%
+#     RESTIC_REPOSITORY: b2:my-repo:/restic
+#     RESTIC_PASSWORD: supersecret
+#     B2_ACCOUNT_ID: xxxxxxx
+#     B2_ACCOUNT_KEY: yyyyyyyy
+#     TZ: Europe/Berlin
+
+volumes:
+  pg_backup:
+    external: true
+
+networks:
+  minio:
+    external: true

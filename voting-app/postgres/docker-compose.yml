@@ -1,9 +1,9 @@
 services:
-  pg-0:
+  pg:
     image: bitnami/postgresql-repmgr:16
-    hostname: pg-0
+    hostname: pg-{{.Task.Slot}}
     volumes:
-      - pg_0_data:/bitnami/postgresql
+      - pg_data:/bitnami/postgresql
     networks:
       - pg_net
     environment:
@@ -12,35 +12,16 @@ services:
       - POSTGRESQL_PASSWORD=postgres
       - POSTGRESQL_DATABASE=postgres
       - REPMGR_PASSWORD=repmgrpassword
-      - REPMGR_PRIMARY_HOST=pg-0
-      - REPMGR_PARTNER_NODES=pg-0,pg-1
-      - REPMGR_NODE_NAME=pg-0
-      - REPMGR_NODE_NETWORK_NAME=pg-0
+      - REPMGR_PRIMARY_HOST=pg-1
+      - REPMGR_PARTNER_NODES=pg-1,pg-2
+      - REPMGR_NODE_NAME=pg-{{.Task.Slot}}
+      - REPMGR_NODE_NETWORK_NAME=pg-{{.Task.Slot}}
     deploy:
+      replicas: 2
       placement:
-        preferences:
-          - pg-0=true
-  pg-1:
-    image: bitnami/postgresql-repmgr:16
-    hostname: pg-1
-    volumes:
-      - pg_1_data:/bitnami/postgresql
-    networks:
-      - pg_net
-    environment:
-      - POSTGRESQL_POSTGRES_PASSWORD=postgres
-      - POSTGRESQL_USERNAME=postgres
-      - POSTGRESQL_PASSWORD=postgres
-      - POSTGRESQL_DATABASE=postgres
-      - REPMGR_PASSWORD=repmgrpassword
-      - REPMGR_PRIMARY_HOST=pg-0
-      - REPMGR_PARTNER_NODES=pg-0,pg-1
-      - REPMGR_NODE_NAME=pg-1
-      - REPMGR_NODE_NETWORK_NAME=pg-1
-    deploy:
-      placement:
-        preferences:
-          - pg-1=true
+        max_replicas_per_node: 1
+        constraints:
+          - node.labels.pg == true
 
   pgpool:
     image: bitnami/pgpool:4
@@ -48,7 +29,7 @@ services:
     networks:
       - pg_net
     environment:
-      - PGPOOL_BACKEND_NODES=0:pg-0:5432,1:pg-1:5432
+      - PGPOOL_BACKEND_NODES=0:pg-1:5432,1:pg-2:5432
       - PGPOOL_SR_CHECK_USER=postgres
       - PGPOOL_SR_CHECK_PASSWORD=postgres
       - PGPOOL_ENABLE_LDAP=no
@@ -57,8 +38,7 @@ services:
       - PGPOOL_ADMIN_USERNAME=admin
       - PGPOOL_ADMIN_PASSWORD=adminpassword
     depends_on:
-      - pg-0
-      - pg-1
+      - pg
     healthcheck:
       test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
       interval: 10s
@@ -69,28 +49,25 @@ services:
     image: postgres:alpine
     volumes:
       - pg_backup:/backup
-      - pg_0_data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data:ro
     networks:
       - pg_net
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
-    command: ["sh", "-c", "echo '0 0 * * * /usr/bin/pg_dump -U $$POSTGRES_USERNAME -d $$POSTGRES_DATABASE > /backup/backup.sql' > /etc/crontabs/root && crond -f -L /dev/stdout"]
+    command: ["sh", "-c", "echo '* * * * * /usr/bin/pg_dump -U $$POSTGRES_USERNAME -d $$POSTGRES_DATABASE > /backup/backup.sql' > /etc/crontabs/root && crond -f -L /dev/stdout"]
     depends_on:
      - pgpool
     deploy:
       placement:
-        preferences:
-          - pg-0=true
+        constraints:
+          - node.labels.pg == true
 
 volumes:
-  pg_0_data:
-    driver: local
-  pg_1_data:
-    driver: local
+  pg_data:
+    external: true
   pg_backup:
-    driver: local
 
 networks:
   pg_net:
