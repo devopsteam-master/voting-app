@@ -134,3 +134,7 @@ services:
     networks:
       - prometheus 
 
+  pushgateway:
+    image: prom/pushgateway
+    networks:
+      - prometheus

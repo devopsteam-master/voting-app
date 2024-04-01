@@ -135,6 +135,12 @@ scrape_configs:
     scheme: http
     static_configs:
     - targets: ['minio-1:9000', 'minio-2:9000']
+
+  - job_name: 'pushgateway'
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['pushgateway:9091']
     
 remote_write:
   - url: http://mimir:3100/api/v1/push
