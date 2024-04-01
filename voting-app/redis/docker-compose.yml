@@ -2,6 +2,7 @@ version: '3.9'
 services:
   redis-master:
     image: bitnami/redis
+    hostname: redis-master
     networks:
       - redis
     environment:
@@ -10,9 +11,9 @@ services:
     deploy:
       replicas: 1
 
-  redis-slave1:
+  redis-slave:
     image: bitnami/redis
-    hostname: redis-slave1
+    hostname: redis-slave-{{.Task.Slot}}
     networks:
       - redis
     depends_on:
@@ -21,22 +22,11 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_REPLICATION_MODE=slave
       - REDIS_MASTER_HOST=redis-master
+      - REDIS_REPLICA_IP=redis-slave-{{.Task.Slot}}
     deploy:
-      replicas: 1
-
-  redis-slave2:
-    image: bitnami/redis
-    hostname: redis-slave2
-    networks:
-      - redis
-    depends_on:
-      - redis-master
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-      - REDIS_REPLICATION_MODE=slave
-      - REDIS_MASTER_HOST=redis-master
-    deploy:
-      replicas: 1
+      replicas: 3
+      placement:
+        max_replicas_per_node: 1
 
   redis-sentinel:
     image: bitnami/redis-sentinel
@@ -70,7 +60,8 @@ services:
 
 networks:
   redis:
-    driver: overlay
+    name: redis
+    external: true
 
 configs:
   haproxy:
