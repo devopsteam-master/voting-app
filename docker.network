@@ -1,1 +1,1 @@
-docker network create --driver=overlay redis
+docker network create --driver=overlay traefik-net redis pg_net

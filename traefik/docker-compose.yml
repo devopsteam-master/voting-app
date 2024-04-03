@@ -1,6 +1,7 @@
 networks:
   traefik-net:
     name: traefik-net
+    external: true
 
 volumes:
   traefik-acme:
@@ -39,21 +40,17 @@ services:
       - traefik-acme:/acme
     networks:
       - traefik-net
-    env_file:
-      - .env
     deploy:
       labels:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-net"
         - "traefik.http.routers.traefik.entrypoints=http"
-#       - "traefik.http.routers.traefik.rule=Host(`${SUB}.${DOMAIN_ADDR}`)"
-        - "traefik.http.routers.traefik.rule=Host(`web.arman.fun`)"
+        - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_SUB}.${DOMAIN}`)"
         - "traefik.http.middlewares.web-auth.basicauth.users=${WEB_AUTH_USER}:${WEB_AUTH_PASS}"
         - "traefik.http.routers.traefik.middlewares=https-redirect"
         - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
         - "traefik.http.routers.traefik-secure.entrypoints=https"
-#       - "traefik.http.routers.traefik-secure.rule=Host(`${SUB}.${DOMAIN_ADDR}`)"
-        - "traefik.http.routers.traefik-secure.rule=Host(`web.arman.fun`)"
+        - "traefik.http.routers.traefik-secure.rule=Host(`${TRAEFIK_SUB}.${DOMAIN}`)"
         - "traefik.http.routers.traefik-secure.tls=true"
         - "traefik.http.routers.traefik-secure.tls.options=default"
         - "traefik.http.routers.traefik-secure.middlewares=web-auth"

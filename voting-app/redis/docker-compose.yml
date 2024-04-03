@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   redis-master:
-    image: bitnami/redis
+    image: bitnami/redis:7.2
     hostname: redis-master
     networks:
       - redis
@@ -12,7 +12,7 @@ services:
       replicas: 1
 
   redis-slave:
-    image: bitnami/redis
+    image: bitnami/redis:7.2
     hostname: redis-slave-{{.Task.Slot}}
     networks:
       - redis
@@ -24,12 +24,12 @@ services:
       - REDIS_MASTER_HOST=redis-master
       - REDIS_REPLICA_IP=redis-slave-{{.Task.Slot}}
     deploy:
-      replicas: 3
+      replicas: 2
       placement:
         max_replicas_per_node: 1
 
   redis-sentinel:
-    image: bitnami/redis-sentinel
+    image: bitnami/redis-sentinel:7.2
     networks:
       - redis
     environment:
@@ -40,11 +40,6 @@ services:
       mode: global
     depends_on:
       - redis-master
-#   healthcheck:
-#     test: ["CMD", "redis-sentinel", "--test", "mymaster"]
-#     interval: 10s
-#     timeout: 5s
-#     retries: 3
 
   proxy:
     image: haproxy:2.9.6-alpine
@@ -54,14 +49,32 @@ services:
         target: /usr/local/etc/haproxy/haproxy.cfg
     networks:
       - redis
+#     - traefik-net
     depends_on:
       - redis-sentinel
-#         condition: service_healthy
+#   deploy:
+#     labels:
+#       - "traefik.enable=true"
+#       - "traefik.docker.network=traefik-net"
+#       - "traefik.http.routers.haproxy.entrypoints=http"
+#       - "traefik.http.routers.haproxy.rule=Host(`${HAPROXY_SUB}.${DOMAIN}`)"
+#       - "traefik.http.middlewares.web-auth.basicauth.users=${HAPROXY_AUTH_USER}:${HAPROXY_AUTH_PASS}"
+#       - "traefik.http.routers.haproxy-secure.middlewares=web-auth"
+#       - "traefik.http.routers.haproxy.middlewares=https-redirect"
+#       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+#       - "traefik.http.routers.haproxy-secure.entrypoints=https"
+#       - "traefik.http.routers.haproxy-secure.rule=Host(`${HAPROXY_SUB}.${DOMAIN}`)"
+#       - "traefik.http.routers.haproxy-secure.tls=true"
+#       - "traefik.http.routers.haproxy-secure.tls.certresolver=mycert"
+#       - "traefik.http.services.haproxy.loadbalancer.server.port=9000"
 
 networks:
   redis:
     name: redis
     external: true
+# traefik-net:
+#   name: traefik-net
+#   external: true
 
 configs:
   haproxy:

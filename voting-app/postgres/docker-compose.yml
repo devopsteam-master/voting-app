@@ -7,11 +7,11 @@ services:
     networks:
       - pg_net
     environment:
-      - POSTGRESQL_POSTGRES_PASSWORD=postgres
-      - POSTGRESQL_USERNAME=postgres
-      - POSTGRESQL_PASSWORD=postgres
-      - POSTGRESQL_DATABASE=postgres
-      - REPMGR_PASSWORD=repmgrpassword
+      - POSTGRESQL_POSTGRES_PASSWORD=${POSTGRESQL_POSTGRES_PASSWORD}
+      - POSTGRESQL_USERNAME=${POSTGRESQL_USERNAME}
+      - POSTGRESQL_PASSWORD=${POSTGRESQL_PASSWORD}
+      - POSTGRESQL_DATABASE=${POSTGRESQL_DATABASE}
+      - REPMGR_PASSWORD=${REPMGR_PASSWORD}
       - REPMGR_PRIMARY_HOST=pg-1
       - REPMGR_PARTNER_NODES=pg-1,pg-2
       - REPMGR_NODE_NAME=pg-{{.Task.Slot}}
@@ -30,13 +30,13 @@ services:
       - pg_net
     environment:
       - PGPOOL_BACKEND_NODES=0:pg-1:5432,1:pg-2:5432
-      - PGPOOL_SR_CHECK_USER=postgres
-      - PGPOOL_SR_CHECK_PASSWORD=postgres
+      - PGPOOL_SR_CHECK_USER=${POSTGRESQL_USERNAME}
+      - PGPOOL_SR_CHECK_PASSWORD=${POSTGRESQL_PASSWORD}
       - PGPOOL_ENABLE_LDAP=no
       - PGPOOL_POSTGRES_USERNAME=postgres
-      - PGPOOL_POSTGRES_PASSWORD=postgres
-      - PGPOOL_ADMIN_USERNAME=admin
-      - PGPOOL_ADMIN_PASSWORD=adminpassword
+      - PGPOOL_POSTGRES_PASSWORD=${POSTGRESQL_POSTGRES_PASSWORD}
+      - PGPOOL_ADMIN_USERNAME=${PGPOOL_ADMIN_USERNAME}
+      - PGPOOL_ADMIN_PASSWORD=${PGPOOL_ADMIN_PASSWORD}
     depends_on:
       - pg
     healthcheck:
@@ -46,19 +46,19 @@ services:
       retries: 5
 
   pg-backup:
-    image: postgres:alpine
+    image: postgres:16-alpine
     volumes:
       - pg_backup:/backup
       - pg_data:/var/lib/postgresql/data:ro
     networks:
       - pg_net
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
+      - POSTGRES_USER=${POSTGRESQL_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
+      - POSTGRES_DB=${POSTGRESQL_DATABASE}
     command: ["sh", "-c", "echo '5 0 * * * /usr/bin/pg_dump -U $$POSTGRES_USERNAME -d $$POSTGRES_DATABASE > /backup/backup.sql' > /etc/crontabs/root && crond -f -L /dev/stdout"]
     depends_on:
-     - pgpool
+      - pgpool
     deploy:
       placement:
         constraints:
@@ -66,7 +66,6 @@ services:
 
 volumes:
   pg_data:
-    external: true
   pg_backup:
 
 networks:
