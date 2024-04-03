@@ -8,7 +8,7 @@ networks:
     external: true
 
 volumes:
-  minio-data-1:
+  minio-data:
 
 services:
   minio:
@@ -18,16 +18,16 @@ services:
       - minio
       - traefik-net
       - prometheus
-    environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: admin123
+    environment: 
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: 
       - "server"
       - "--console-address"
       - ":9001"
-      - "http://minio-{1...2}:9000/data1"
+      - "http://minio-{1...2}:9000/data"
     volumes:
-      - minio-data-1:/data1
+      - minio-data:/data
     deploy:
       replicas: 1
       placement:
@@ -50,11 +50,11 @@ services:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-net"
         - "traefik.http.routers.minio.entrypoints=http"
-        - "traefik.http.routers.minio.rule=Host(`minio.arman.fun`)"
+        - "traefik.http.routers.minio.rule=Host(`${MINIO_DOMAIN}.${DOMAIN}`)"
         - "traefik.http.routers.minio.middlewares=https-redirect"
         - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
         - "traefik.http.routers.minio-secure.entrypoints=https"
-        - "traefik.http.routers.minio-secure.rule=Host(`minio.arman.fun`)"
+        - "traefik.http.routers.minio-secure.rule=Host(`${MINIO_DOMAIN}.${DOMAIN}`)"
         - "traefik.http.routers.minio-secure.tls=true"
         - "traefik.http.routers.minio-secure.tls.certresolver=mycert"
         - "traefik.http.services.minio.loadbalancer.server.port=9001"
@@ -65,16 +65,13 @@ services:
       - minio
       - traefik-net
       - prometheus
-    environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: admin123
     command: 
       - "server"
       - "--console-address"
       - ":9001"
-      - "http://minio-{1...2}:9000/data1"
+      - "http://minio-{1...2}:9000/data"
     volumes:
-      - minio-data-1:/data1
+      - minio-data:/data
     deploy:
       replicas: 1
       placement:
@@ -97,11 +94,41 @@ services:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-net"
         - "traefik.http.routers.minio.entrypoints=http"
-        - "traefik.http.routers.minio.rule=Host(`minio.arman.fun`)"
+        - "traefik.http.routers.minio.rule=Host(`${MINIO_DOMAIN}.${DOMAIN}`)"
         - "traefik.http.routers.minio.middlewares=https-redirect"
         - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
         - "traefik.http.routers.minio-secure.entrypoints=https"
-        - "traefik.http.routers.minio-secure.rule=Host(`minio.arman.fun`)"
+        - "traefik.http.routers.minio-secure.rule=Host(`${MINIO_DOMAIN}.${DOMAIN}`)"
         - "traefik.http.routers.minio-secure.tls=true"
         - "traefik.http.routers.minio-secure.tls.certresolver=mycert"
         - "traefik.http.services.minio.loadbalancer.server.port=9001"
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+      - minio-2 
+    networks:
+      - minio
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+      placement:
+        constraints:
+          - node.hostname == sw1
+    entrypoint: >
+      /bin/bash -c "
+       sleep 10 ;
+       /usr/bin/mc alias set myminio http://minio:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD ;
+       for bucket in $BUCKETS ; do
+         if ! /usr/bin/mc ls myminio/$$bucket ; then
+           /usr/bin/mc mb myminio/$$bucket ;
+           /usr/bin/mc policy set public myminio/$$bucket ;
+         fi ;
+       done ;
+       if ! /usr/bin/mc admin user info myminio $MINIO_USER; then
+         /usr/bin/mc admin user add myminio $MINIO_USER $MINIO_PASSWORD;
+       fi;
+       exit 0;
+      "
