@@ -10,6 +10,10 @@ networks:
 volumes:
   minio-data:
 
+configs:
+  policy:
+    file: ./mimir-policy.json
+
 services:
   minio:
     image: quay.io/minio/minio
@@ -110,6 +114,9 @@ services:
       - minio-2 
     networks:
       - minio
+    configs:
+      - source: policy
+        target: /tmp/mimir-policy.json
     deploy:
       replicas: 1
       restart_policy:
@@ -127,8 +134,12 @@ services:
            /usr/bin/mc policy set public myminio/$$bucket ;
          fi ;
        done ;
+       if ! /usr/bin/mc admin policy info myminio mimir-policy; then
+        /usr/bin/mc admin policy create myminio mimir-policy /tmp/mimir-policy.json;
+       fi;
        if ! /usr/bin/mc admin user info myminio $MINIO_USER; then
          /usr/bin/mc admin user add myminio $MINIO_USER $MINIO_PASSWORD;
+         /usr/bin/mc admin policy attach myminio mimir-policy --user $MINIO_USER
        fi;
        exit 0;
       "
