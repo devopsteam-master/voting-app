@@ -1,4 +1,0 @@
-Flask
-redis>=3.0.0
-gunicorn
-redis-py-cluster>=2.1.0

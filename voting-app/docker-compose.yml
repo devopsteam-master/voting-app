@@ -13,11 +13,11 @@ services:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-net"
         - "traefik.http.routers.vote.entrypoints=http"
-        - "traefik.http.routers.vote.rule=Host(`vote.arman.fun`)"
+        - "traefik.http.routers.vote.rule=Host(`${VOTE_SUB}.${DOMAIN}`)"
         - "traefik.http.routers.vote.middlewares=https-redirect"
         - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
         - "traefik.http.routers.vote-secure.entrypoints=https"
-        - "traefik.http.routers.vote-secure.rule=Host(`vote.arman.fun`)"
+        - "traefik.http.routers.vote-secure.rule=Host(`${VOTE_SUB}.${DOMAIN}`)"
         - "traefik.http.routers.vote-secure.tls=true"
         - "traefik.http.routers.vote-secure.tls.certresolver=mycert"
         - "traefik.http.services.vote.loadbalancer.server.port=80"
@@ -35,16 +35,16 @@ services:
       - traefik-net
       - pg_net
     deploy:
-      replicas: 2
+      replicas: 1
       labels:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-net"
         - "traefik.http.routers.result.entrypoints=http"
-        - "traefik.http.routers.result.rule=Host(`result.arman.fun`)"
+        - "traefik.http.routers.result.rule=Host(`${RESULT_SUB}.${DOMAIN}`)"
         - "traefik.http.routers.result.middlewares=https-redirect"
         - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
         - "traefik.http.routers.result-secure.entrypoints=https"
-        - "traefik.http.routers.result-secure.rule=Host(`result.arman.fun`)"
+        - "traefik.http.routers.result-secure.rule=Host(`${RESULT_SUB}.${DOMAIN}`)"
         - "traefik.http.routers.result-secure.tls=true"
         - "traefik.http.routers.result-secure.tls.certresolver=mycert"
         - "traefik.http.services.result.loadbalancer.server.port=80"
@@ -55,7 +55,7 @@ networks:
     external: true
   redis:
     external: true
-    name: redis_redis
+    name: redis
   pg_net:
     external: true
     name: pg_net
