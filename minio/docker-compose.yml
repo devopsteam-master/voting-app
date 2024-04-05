@@ -11,12 +11,14 @@ volumes:
   minio-data:
 
 configs:
-  policy:
+  mimir-policy:
     file: ./mimir-policy.json
+  loki-policy:
+    file: ./loki-policy.json
 
 services:
   minio:
-    image: quay.io/minio/minio
+    image: quay.io/minio/minio:${MINIO_MINIO_VERSION:-latest}
     hostname: minio-1
     networks:
       - minio
@@ -63,7 +65,7 @@ services:
         - "traefik.http.routers.minio-secure.tls.certresolver=mycert"
         - "traefik.http.services.minio.loadbalancer.server.port=9001"
   minio-2:
-    image: quay.io/minio/minio
+    image: quay.io/minio/minio:${MINIO_MINIO_VERSION:-latest}
     hostname: minio-2
     networks:
       - minio
@@ -108,22 +110,21 @@ services:
         - "traefik.http.services.minio.loadbalancer.server.port=9001"
 
   createbuckets:
-    image: minio/mc
+    image: quay.io/minio/mc:${MINIO_MC_VERSION:-latest}
     depends_on:
       - minio
       - minio-2 
     networks:
       - minio
     configs:
-      - source: policy
+      - source: mimir-policy
         target: /tmp/mimir-policy.json
+      - source: loki-policy
+        target: /tmp/loki-policy.json
     deploy:
       replicas: 1
       restart_policy:
         condition: none
-      placement:
-        constraints:
-          - node.hostname == sw1
     entrypoint: >
       /bin/bash -c "
        sleep 10 ;
@@ -137,9 +138,13 @@ services:
        if ! /usr/bin/mc admin policy info myminio mimir-policy; then
         /usr/bin/mc admin policy create myminio mimir-policy /tmp/mimir-policy.json;
        fi;
+       if ! /usr/bin/mc admin policy info myminio loki-policy; then
+        /usr/bin/mc admin policy create myminio loki-policy /tmp/loki-policy.json;
+       fi;
        if ! /usr/bin/mc admin user info myminio $MINIO_USER; then
          /usr/bin/mc admin user add myminio $MINIO_USER $MINIO_PASSWORD;
          /usr/bin/mc admin policy attach myminio mimir-policy --user $MINIO_USER
        fi;
+         /usr/bin/mc admin policy attach myminio loki-policy --user $MINIO_USER
        exit 0;
       "

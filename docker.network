@@ -1,1 +1,6 @@
-docker network create --driver=overlay traefik-net redis pg_net
+#!/bin/bash
+NETWORKS="traefik-net redis pg_net prometheus minio"
+for i in $NETWORKS
+do 
+  docker network create --driver=overlay $i
+done
