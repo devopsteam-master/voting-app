@@ -142,6 +142,14 @@ scrape_configs:
     static_configs:
       - targets: ['pushgateway:9091']
     
+  - job_name: 'traefik'
+    static_configs:
+    - targets: ['traefik:8082']
+
+  - job_name: 'grafana_metrics'
+    static_configs:
+    - targets: ['grafana:3000']
+
 remote_write:
   - url: http://mimir:3100/api/v1/push
     headers:

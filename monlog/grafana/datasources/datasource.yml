@@ -6,7 +6,7 @@ datasources:
   access: proxy
   url: http://prometheus:9090
   editable: true
-  isDefault: false
+  isDefault: true
 
 - name: Loki
   type: loki
@@ -15,30 +15,3 @@ datasources:
   version: 1
   editable: true
     
-- name: Mimir
-  type: prometheus
-  access: proxy
-  orgId: 1
-  url: http://load-balancer:9009/prometheus
-  version: 1
-  editable: true
-  jsonData:
-    httpHeaderName1: "X-Scope-OrgID"
-    alertmanagerUid: "alertmanager"
-  secureJsonData:
-    httpHeaderValue1: "DevOps"
-  isDefault: true
-
-- name: Mimir Alertmanager
-  uid: alertmanager
-  type: alertmanager
-  access: proxy
-  orgId: 1
-  url: http://load-balancer:9009/
-  version: 1
-  editable: true
-  jsonData:
-    httpHeaderName1: "X-Scope-OrgID"
-    implementation: "cortex"
-  secureJsonData:
-    httpHeaderValue1: "DevOps"
