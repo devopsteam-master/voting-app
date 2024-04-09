@@ -3,14 +3,14 @@ services:
     image: mazzolino/restic
     environment:
       BACKUP_CRON: "15 1 * * *"
-      RESTIC_REPOSITORY: s3:http://minio:9000/back-up
-      RESTIC_PASSWORD: supersecret
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD}
       RESTIC_BACKUP_SOURCES: /mnt/volumes
 #     RESTIC_BACKUP_ARGS: -v
       RESTIC_BACKUP_TAGS: postgres
       TZ: Asia/Tehran
-      AWS_ACCESS_KEY_ID: jUATwbv7K6x1NfryfGpm
-      AWS_SECRET_ACCESS_KEY: ULUhIqZf2HOKt1mtHCfezopGeXFCnKOx73YT4XmT
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID} 
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY} 
       POST_COMMANDS_SUCCESS: >-
             sh -c "echo -e 'backup_status{status=\"success\", type=\"full\"} 1' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/backup-pgsql/"
       POST_COMMANDS_FAILURE: >-
@@ -20,10 +20,6 @@ services:
      - minio
     volumes:
       - pg_backup:/mnt/volumes:ro
-    deploy:
-      placement:
-        constraints:
-          - node.labels.pg == true
 
   prune:
     image: mazzolino/restic
@@ -31,11 +27,11 @@ services:
       SKIP_INIT: "true"
       PRUNE_CRON: "0 5 4 * *"
       RESTIC_FORGET_ARGS: --prune --keep-last 14 --keep-daily 1
-      RESTIC_REPOSITORY: s3:http://minio:9000/back-up
-      RESTIC_PASSWORD: supersecret
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD}
       TZ: Asia/Tehran
-      AWS_ACCESS_KEY_ID: jUATwbv7K6x1NfryfGpm
-      AWS_SECRET_ACCESS_KEY: ULUhIqZf2HOKt1mtHCfezopGeXFCnKOx73YT4XmT
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       POST_COMMANDS_SUCCESS: |-
             sh -c "echo -e 'chech_backup_status{status=\"success\", type=\"full\"} 1' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/prune_backup-pgsql/"
       POST_COMMANDS_FAILURE: |-
@@ -44,10 +40,6 @@ services:
       - minio
     volumes:
       - pg_backup:/mnt/volumes:ro
-    deploy:
-      placement:
-        constraints:
-          - node.labels.pg == true
 
   check:
     image: mazzolino/restic
@@ -56,11 +48,11 @@ services:
       RUN_ON_STARTUP: "false"
       CHECK_CRON: "3 2 5 * *"
       RESTIC_CHECK_ARGS: --read-data-subset=10%
-      RESTIC_REPOSITORY: s3:http://minio:9000/back-up
-      RESTIC_PASSWORD: supersecret
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD}
       TZ: Asia/Tehran
-      AWS_ACCESS_KEY_ID: jUATwbv7K6x1NfryfGpm
-      AWS_SECRET_ACCESS_KEY: ULUhIqZf2HOKt1mtHCfezopGeXFCnKOx73YT4XmT
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID} 
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       POST_COMMANDS_SUCCESS: |-
             sh -c "echo -e 'chech_backup_status{status=\"success\", type=\"full\"} 1' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/chech_backup-pgsql/"
       POST_COMMANDS_FAILURE: |-
@@ -70,10 +62,6 @@ services:
       - prometheus
     volumes:
       - pg_backup:/mnt/volumes:ro
-    deploy:
-      placement:
-        constraints:
-          - node.labels.pg == true
 
 volumes:
   pg_backup:

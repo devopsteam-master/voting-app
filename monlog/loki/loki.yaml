@@ -22,8 +22,8 @@ common:
       endpoint: minio:9000
       insecure: true
       bucketnames: loki
-      access_key_id: jUATwbv7K6x1NfryfGpm
-      secret_access_key: ULUhIqZf2HOKt1mtHCfezopGeXFCnKOx73YT4XmT
+      access_key_id: rBc2VmvCiA1URivUtPxozQ7Gz7g
+      secret_access_key: uCG0OetOfYcWF4yGqG0IgdiVvmOq29chJV5LRBlgX7I
       s3forcepathstyle: true
   ring:
     kvstore:
