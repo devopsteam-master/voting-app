@@ -13,7 +13,7 @@ services:
 
   redis-slave:
     image: bitnami/redis:7.2
-    hostname: redis-slave-{{.Task.Slot}}
+    hostname: redis-slave{{.Task.Slot}}
     networks:
       - redis
     depends_on:

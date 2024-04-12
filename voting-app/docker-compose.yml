@@ -1,9 +1,11 @@
-version: '3.9'
 services:
   vote:
     image: dockersamples/examplevotingapp_vote
     hostname: vote-app-{{.Task.Slot}}
     command: python app.py
+    environment:
+      - OPTION_A=${OPTION_A}
+      - OPTION_B=${OPTION_B}
     networks:
       - traefik-net
       - redis
@@ -24,9 +26,12 @@ services:
 
   worker:
     image: dockersamples/examplevotingapp_worker
+    hostname: worker-app-{{.Task.Slot}}
     networks:
       - redis
       - pg_net
+    deploy:
+      replicas: 2
 
   result:
     image: dockersamples/examplevotingapp_result
