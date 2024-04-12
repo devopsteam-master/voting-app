@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 set -a
 NETWORKS="traefik-net redis pg_net prometheus minio"
 for i in $NETWORKS

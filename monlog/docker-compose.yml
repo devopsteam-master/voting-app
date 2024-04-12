@@ -114,7 +114,7 @@ services:
 
   promtail:
     image:  grafana/promtail:${GRAFANA_PROMTAIL_VERSION:-latest}
-    hostname: promtail-{.Task.Slot}
+    hostname: promtail-{{.Task.Slot}}
     configs:
       - source: promtail
         target: /etc/promtail/docker-config.yaml
@@ -145,7 +145,7 @@ services:
   discord-alerts:
     image: benjojo/alertmanager-discord
     environment:
-     - DISCORD_WEBHOOK=https://discord.com/api/webhooks/1222636673222049792/C0rUyzrLUCyaOIxZgagddfze-wZcLZgYO-R5m4FypXm9lFPScQetB_PaAwT7Z5z34Mlr
+     - DISCORD_WEBHOOK=${DISCORD_WEBHOOK}
     networks:
       - prometheus 
 
