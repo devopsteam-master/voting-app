@@ -146,7 +146,7 @@ scrape_configs:
     static_configs:
     - targets: ['traefik:8082']
 
-  - job_name: 'grafana_metrics'
+  - job_name: 'grafana'
     static_configs:
     - targets: ['grafana:3000']
 
