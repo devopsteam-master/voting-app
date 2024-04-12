@@ -49,32 +49,32 @@ services:
         target: /usr/local/etc/haproxy/haproxy.cfg
     networks:
       - redis
-#     - traefik-net
+      - traefik-net
     depends_on:
       - redis-sentinel
-#   deploy:
-#     labels:
-#       - "traefik.enable=true"
-#       - "traefik.docker.network=traefik-net"
-#       - "traefik.http.routers.haproxy.entrypoints=http"
-#       - "traefik.http.routers.haproxy.rule=Host(`${HAPROXY_SUB}.${DOMAIN}`)"
-#       - "traefik.http.middlewares.web-auth.basicauth.users=${HAPROXY_AUTH_USER}:${HAPROXY_AUTH_PASS}"
-#       - "traefik.http.routers.haproxy-secure.middlewares=web-auth"
-#       - "traefik.http.routers.haproxy.middlewares=https-redirect"
-#       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-#       - "traefik.http.routers.haproxy-secure.entrypoints=https"
-#       - "traefik.http.routers.haproxy-secure.rule=Host(`${HAPROXY_SUB}.${DOMAIN}`)"
-#       - "traefik.http.routers.haproxy-secure.tls=true"
-#       - "traefik.http.routers.haproxy-secure.tls.certresolver=mycert"
-#       - "traefik.http.services.haproxy.loadbalancer.server.port=9000"
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.http.routers.haproxy.entrypoints=http"
+        - "traefik.http.routers.haproxy.rule=Host(`${HAPROXY_SUB}.${DOMAIN}`)"
+        - "traefik.http.middlewares.web-auth.basicauth.users=${HAPROXY_AUTH_USER}:${HAPROXY_AUTH_PASS}"
+        - "traefik.http.routers.haproxy-secure.middlewares=web-auth"
+        - "traefik.http.routers.haproxy.middlewares=https-redirect"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.haproxy-secure.entrypoints=https"
+        - "traefik.http.routers.haproxy-secure.rule=Host(`${HAPROXY_SUB}.${DOMAIN}`)"
+        - "traefik.http.routers.haproxy-secure.tls=true"
+        - "traefik.http.routers.haproxy-secure.tls.certresolver=mycert"
+        - "traefik.http.services.haproxy.loadbalancer.server.port=9000"
 
 networks:
   redis:
     name: redis
     external: true
-# traefik-net:
-#   name: traefik-net
-#   external: true
+  traefik-net:
+    name: traefik-net
+    external: true
 
 configs:
   haproxy:

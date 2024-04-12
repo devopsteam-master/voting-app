@@ -1,6 +1,7 @@
 services:
   vote:
-    image: dockersamples/examplevotingapp_vote
+#   image: dockersamples/examplevotingapp_vote
+    image: ${VOTE_IMAGE}
     hostname: vote-app-{{.Task.Slot}}
     command: python app.py
     environment:
@@ -25,7 +26,8 @@ services:
         - "traefik.http.services.vote.loadbalancer.server.port=80"
 
   worker:
-    image: dockersamples/examplevotingapp_worker
+#   image: dockersamples/examplevotingapp_worker
+    image: ${WORKER_IMAGE}
     hostname: worker-app-{{.Task.Slot}}
     networks:
       - redis
@@ -34,7 +36,8 @@ services:
       replicas: 2
 
   result:
-    image: dockersamples/examplevotingapp_result
+#   image: dockersamples/examplevotingapp_result
+    image: ${RESULT_IMAGE}
     hostname: result-app-{{.Task.Slot}}
     networks:
       - traefik-net
