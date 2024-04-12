@@ -35,6 +35,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    dns:
+      - 4.2.2.4
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik-acme:/acme
