@@ -1,0 +1,89 @@
+networks:
+  minio:
+    name: minio
+    external: true
+  prometheus:
+    name: prometheus
+    external: true
+
+volumes:
+  mimir-1:
+  mimir-2:
+  mimir-3:
+
+configs:
+  mimir.yml:
+    template_driver: golang
+    file: configs/mimir.yml
+# alertmanager-fallback-config.yml:
+#   file: configs/alertmanager-fallback-config.yml
+  mimir-entrypoint:
+    file: configs/mimir-entrypoint.sh
+
+services:
+  mimir:
+    image: grafana/mimir:${GRAFANA_MIMIR_VERSION:-latest}
+    hostname: mimir-1
+    entrypoint: [ "sh", "/etc/mimir-entrypoint.sh" ]
+    networks:
+      - prometheus
+      - minio
+    volumes:
+      - mimir-1:/mimir
+    configs:
+      - source: mimir-entrypoint
+        target: /etc/mimir-entrypoint.sh
+      - source: mimir.yml
+        target: /etc/mimir-template.yml
+#     - source: alertmanager-fallback-config.yml
+#       target: /etc/mimir/alertmanager-fallback-config.yml
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    deploy:
+      labels:
+        io.prometheus.enabled: "true"
+        io.prometheus.scrape_port: "3100"
+  mimir-2:
+    image: grafana/mimir:${GRAFANA_MIMIR_VERSION:-latest}
+    hostname: mimir-2
+    entrypoint: [ "sh", "/etc/mimir-entrypoint.sh" ]
+    networks:
+      - prometheus
+      - minio
+    volumes:
+      - mimir-2:/mimir
+    configs:
+      - source: mimir-entrypoint
+        target: /etc/mimir-entrypoint.sh
+      - source: mimir.yml
+        target: /etc/mimir-template.yml
+#     - source: alertmanager-fallback-config.yml
+#       target: /etc/mimir/alertmanager-fallback-config.yml
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    deploy:
+      labels:
+        io.prometheus.enabled: "true"
+        io.prometheus.scrape_port: "3100"
+  mimir-3:
+    image: grafana/mimir:${GRAFANA_MIMIR_VERSION:-latest}
+    hostname: mimir-3
+    entrypoint: [ "sh", "/etc/mimir-entrypoint.sh" ]
+    networks:
+      - prometheus
+      - minio
+    volumes:
+      - mimir-3:/mimir
+    configs:
+      - source: mimir-entrypoint
+        target: /etc/mimir-entrypoint.sh
+      - source: mimir.yml
+        target: /etc/mimir-template.yml
+#     - source: alertmanager-fallback-config.yml
+#       target: /etc/mimir/alertmanager-fallback-config.yml
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    deploy:
+      labels:
+        io.prometheus.enabled: "true"
+        io.prometheus.scrape_port: "3100"
