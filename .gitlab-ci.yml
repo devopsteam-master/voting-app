@@ -128,7 +128,7 @@ deploy-to-production:
              traefik \
              voting-app/postgres \
              voting-app/redis \
-             voting-app/.env
+             voting-app/.env \
              voting-app/docker-compose.yml \
              deploy-single-node.sh \
           monster:~/${SERVICE_PATH}

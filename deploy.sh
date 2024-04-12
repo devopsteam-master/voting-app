@@ -1,5 +1,7 @@
 #!/bin/bash
 set -a
+DOMAIN=arman.fun
+
 NETWORKS="traefik-net redis pg_net prometheus minio"
 for i in $NETWORKS
 do 
