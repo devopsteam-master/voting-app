@@ -21,8 +21,8 @@ common:
     backend: s3
     s3:
       endpoint: minio:9000
-      access_key_id: jUATwbv7K6x1NfryfGpm
-      secret_access_key: ULUhIqZf2HOKt1mtHCfezopGeXFCnKOx73YT4XmT
+      access_key_id: ${MINIO_MIMIR_USER}
+      secret_access_key: ${MINIO_MIMIR_PASSWORD}
       insecure: true
       bucket_name: mimir
 

@@ -8,17 +8,19 @@ networks:
     external: true
 
 volumes:
-  minio-data:
+  minio-data-1:
 
 configs:
   mimir-policy:
     file: ./mimir-policy.json
   loki-policy:
     file: ./loki-policy.json
+  backup-policy:
+    file: ./backup-policy.json
 
 services:
   minio:
-    image: quay.io/minio/minio:${MINIO_MINIO_VERSION:-latest}
+    image: quay.io/minio/minio
     hostname: minio-1
     networks:
       - minio
@@ -31,9 +33,9 @@ services:
       - "server"
       - "--console-address"
       - ":9001"
-      - "http://minio-{1...2}:9000/data"
+      - "/data1"
     volumes:
-      - minio-data:/data
+      - minio-data-1:/data1
     deploy:
       replicas: 1
       placement:
@@ -56,64 +58,19 @@ services:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-net"
         - "traefik.http.routers.minio.entrypoints=http"
-        - "traefik.http.routers.minio.rule=Host(`${MINIO_SUB}.${DOMAIN}`)"
+        - "traefik.http.routers.minio.rule=Host(`${MINIO_DOMAIN}.${DOMAIN}`)"
         - "traefik.http.routers.minio.middlewares=https-redirect"
         - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
         - "traefik.http.routers.minio-secure.entrypoints=https"
-        - "traefik.http.routers.minio-secure.rule=Host(`${MINIO_SUB}.${DOMAIN}`)"
-        - "traefik.http.routers.minio-secure.tls=true"
-        - "traefik.http.routers.minio-secure.tls.certresolver=mycert"
-        - "traefik.http.services.minio.loadbalancer.server.port=9001"
-  minio-2:
-    image: quay.io/minio/minio:${MINIO_MINIO_VERSION:-latest}
-    hostname: minio-2
-    networks:
-      - minio
-      - traefik-net
-      - prometheus
-    command: 
-      - "server"
-      - "--console-address"
-      - ":9001"
-      - "http://minio-{1...2}:9000/data"
-    volumes:
-      - minio-data:/data
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.hostname == sw2
-      update_config:
-        parallelism: 1
-        delay: 30s
-        order: stop-first
-        failure_action: rollback
-      rollback_config:
-        parallelism: 1
-        delay: 30s
-      restart_policy:
-        condition: on-failure
-        delay: 30s
-        max_attempts: 3
-        window: 120s
-      labels:
-        - "traefik.enable=true"
-        - "traefik.docker.network=traefik-net"
-        - "traefik.http.routers.minio.entrypoints=http"
-        - "traefik.http.routers.minio.rule=Host(`${MINIO_SUB}.${DOMAIN}`)"
-        - "traefik.http.routers.minio.middlewares=https-redirect"
-        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-        - "traefik.http.routers.minio-secure.entrypoints=https"
-        - "traefik.http.routers.minio-secure.rule=Host(`${MINIO_SUB}.${DOMAIN}`)"
+        - "traefik.http.routers.minio-secure.rule=Host(`${MINIO_DOMAIN}.${DOMAIN}`)"
         - "traefik.http.routers.minio-secure.tls=true"
         - "traefik.http.routers.minio-secure.tls.certresolver=mycert"
         - "traefik.http.services.minio.loadbalancer.server.port=9001"
 
   createbuckets:
-    image: quay.io/minio/mc:${MINIO_MC_VERSION:-latest}
+    image: minio/mc
     depends_on:
       - minio
-      - minio-2 
     networks:
       - minio
     configs:
@@ -121,10 +78,15 @@ services:
         target: /tmp/mimir-policy.json
       - source: loki-policy
         target: /tmp/loki-policy.json
+      - source: backup-policy
+        target: /tmp/backup-policy.json
     deploy:
       replicas: 1
       restart_policy:
         condition: none
+      placement:
+        constraints:
+          - node.hostname == sw1
     entrypoint: >
       /bin/bash -c "
        sleep 10 ;
