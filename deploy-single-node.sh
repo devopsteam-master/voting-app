@@ -18,7 +18,7 @@ source voting-app/redis/.env
 docker stack deploy -c voting-app/redis/docker-compose.yml --detach=true redis
 
 source voting-app/.env
-docker stack deploy -c voting-app/docker-compose.yml  --detach=true app
+docker stack deploy -c voting-app/docker-compose.yml --with-registry-auth --resolve-image always --detach=true app
 
 source minio/.env
 docker stack deploy -c minio/docker-compose-single-node.yml --detach=true minio

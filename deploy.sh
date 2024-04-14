@@ -9,28 +9,28 @@ do
 done
 
 source traefik/.env
-docker stack deploy -c traefik/docker-compose.yml traefik
+docker stack deploy -c traefik/docker-compose.yml --detach=true traefik
 
 source voting-app/postgres/.env
-docker stack deploy -c voting-app/postgres/docker-compose.yml pg
+docker stack deploy -c voting-app/postgres/docker-compose.yml --detach=true pg
 
 source voting-app/redis/.env
-docker stack deploy -c voting-app/redis/docker-compose.yml redis
+docker stack deploy -c voting-app/redis/docker-compose.yml --detach=true redis
 
 source voting-app/.env
-docker stack deploy -c voting-app/docker-compose.yml app
+docker stack deploy -c voting-app/docker-compose.yml --with-registry-auth --resolve-image always --detach=true app
 
 source minio/.env
-docker stack deploy -c minio/docker-compose.yml minio
+docker stack deploy -c minio/docker-compose.yml --detach=true minio
 
 source monlog/mimir/.env
-docker stack deploy -c monlog/mimir/docker-compose.yml mimir
+docker stack deploy -c monlog/mimir/docker-compose.yml --detach=true mimir
 
 source monlog/.env
-docker stack deploy -c monlog/docker-compose.yml monlog
-docker stack deploy -c monlog/exporter-compose.yml exporter
+docker stack deploy -c monlog/docker-compose.yml --detach=true monlog
+docker stack deploy -c monlog/exporter-compose.yml --detach=true exporter
 
 source backup-server/.env
-docker stack deploy -c backup-server/docker-compose.yml bu
+docker stack deploy -c backup-server/docker-compose.yml --detach=true bu
 
 set +a
