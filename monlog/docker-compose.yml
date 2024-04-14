@@ -36,7 +36,6 @@ services:
     user: root
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./prometheus:/etc/prometheus
     configs:
       - source: prometheus
         target: /etc/prometheus/prometheus.yml
@@ -131,8 +130,6 @@ services:
 
   alertmanager:
     image: prom/alertmanager:${PROM_ALERTMANAGER_VERSION:-latest}
-#   volumes:
-#     - alertmanager_data:/alertmanager
     configs:
       - source: alertmanager
         target: /etc/alertmanager/alertmanager.yml
@@ -144,10 +141,13 @@ services:
 
   discord-alerts:
     image: benjojo/alertmanager-discord
+    hostname: discord-alerts
     environment:
      - DISCORD_WEBHOOK=${DISCORD_WEBHOOK}
     networks:
       - prometheus 
+    dns:
+      - 1.1.1.1
 
   pushgateway:
     image: prom/pushgateway:${PROM_PUSHGATEWAY_VERSION:-latest}
