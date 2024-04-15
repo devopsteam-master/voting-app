@@ -20,8 +20,8 @@ configs:
     file: ./prometheus/prometheus.yml
   prometheus_alerts:
     file: ./prometheus/alerts/alert.rules
-  grafana_datasource:
-     file: ./grafana/datasources/datasource.yml
+  grafana_provisioning:
+    file: ./grafana/provisioning.tar.gz
   loki:
     file: ./loki/loki.yaml
   promtail:
@@ -69,10 +69,8 @@ services:
       - prometheus
       - traefik-net
     configs:
-      - source: grafana_datasource
-        target: /etc/grafana/provisioning/datasources/datasource.yml
-    volumes:
-      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards/
+      - source: grafana_provisioning
+        target: /tmp/provisioning.tar.gz
     environment:
       - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
@@ -83,10 +81,13 @@ services:
       - GC_CHECK_FOR_UPDATES=false
       - GF_REPORTING_ENABLED=false
       - GF_SUPPORT_BUNDLES_ENABLED=false
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        tar xvf /tmp/provisioning.tar.gz --directory=/etc/grafana/provisioning/ &&
+        /run.sh
     deploy:
-      placement:
-        constraints:
-           - node.hostname == sw1
       labels:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-net"
@@ -99,7 +100,7 @@ services:
         - "traefik.http.routers.grafana-secure.tls=true"
         - "traefik.http.routers.grafana-secure.tls.certresolver=mycert"
         - "traefik.http.services.grafana.loadbalancer.server.port=3000"
- 
+
   loki:
     image: grafana/loki:${GRAFANA_LOKI_VERSION:-latest}
     hostname: loki
@@ -143,7 +144,7 @@ services:
     image: benjojo/alertmanager-discord
     hostname: discord-alerts
     environment:
-     - DISCORD_WEBHOOK=${DISCORD_WEBHOOK}
+      - DISCORD_WEBHOOK=${DISCORD_WEBHOOK}
     networks:
       - prometheus 
     dns:

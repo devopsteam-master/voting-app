@@ -97,6 +97,54 @@ container_scanning_result:
   variables:
     CS_IMAGE: $IMAGE_PATH/result:latest
 
+deploy-to-preproduction:
+  stage: deploy
+  variables:
+    DOMAIN: pre.arman.fun
+    SERVER_NAME: production.harimi.ir
+    HOSTNAME: production
+    SSH_USER: user
+    SSH_PORT: 22
+    SERVICE_PATH: monster
+  before_script:
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval "$(ssh-agent -s)"
+    - ssh-add ~/.ssh/id_rsa
+    - echo "Host monster" > ~/.ssh/config
+    - echo "  HostName $DOMAIN" >> ~/.ssh/config
+    - echo "  User $SSH_USER" >> ~/.ssh/config
+    - echo "  Port $SSH_PORT" >> ~/.ssh/config
+    - echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+  script:
+    - |
+      ssh monster "
+      [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH} "
+      scp -r backup-server \
+            minio \
+            monlog \
+            traefik \
+            voting-app/postgres \
+            voting-app/redis \
+            voting-app/.env \
+            voting-app/docker-compose.yml \
+            deploy-single-node.sh \
+          monster:~/${SERVICE_PATH}
+      ssh monster "
+      export DOMAIN=${DOMAIN}
+      [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH}
+      cd ${SERVICE_PATH}/monlog/grafana
+      tar czf provisioning.tar.gz ./dashboards ./datasources
+      cd
+      bash -c ${SERVICE_PATH}/deploy-single-node.sh
+      "
+  environment:
+    name: production
+    url: https://vote.$DOMAIN https://result.$DOMAIN
+  when: always
+
 deploy-to-production:
   stage: deploy
   variables:
@@ -123,21 +171,20 @@ deploy-to-production:
       ssh monster "
       [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH} "
       scp -r backup-server \
-             minio \
-             monlog \
-             traefik \
-             voting-app/postgres \
-             voting-app/redis \
-             voting-app/.env \
-             voting-app/docker-compose.yml \
-             deploy-single-node.sh \
+            minio \
+            monlog \
+            traefik \
+            voting-app/postgres \
+            voting-app/redis \
+            voting-app/.env \
+            voting-app/docker-compose.yml \
+            deploy-single-node.sh \
           monster:~/${SERVICE_PATH}
       ssh monster "
       [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH}
-      docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_ADDR
-      docker pull $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA
-      docker pull $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA
-      docker pull $IMAGE_PATH/result:$CI_COMMIT_SHORT_SHA
+      cd ${SERVICE_PATH}/monlog/grafana
+      tar czf provisioning.tar.gz ./dashboards ./datasources
+      cd
       bash -c ${SERVICE_PATH}/deploy.sh
       "
   environment:
