@@ -16,8 +16,8 @@ services:
       POST_COMMANDS_FAILURE: >-
             sh -c "echo -e 'backup_status{status=\"failure\"} 0' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/backup-pgsql/"
     networks:
-     - prometheus
-     - minio
+      - prometheus
+      - minio
     volumes:
       - pg_backup:/mnt/volumes:ro
 

@@ -20,7 +20,7 @@ configs:
 
 services:
   minio:
-    image: quay.io/minio/minio
+    image: quay.io/minio/minio:${MINIO_MINIO_VERSION:-latest}
     hostname: minio-1
     networks:
       - minio
@@ -38,9 +38,6 @@ services:
       - minio-data-1:/data1
     deploy:
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == sw1
       update_config:
         parallelism: 1
         delay: 30s
@@ -68,7 +65,7 @@ services:
         - "traefik.http.services.minio.loadbalancer.server.port=9001"
 
   createbuckets:
-    image: minio/mc
+    image: quay.io/minio/mc:${MINIO_MC_VERSION:-latest}
     depends_on:
       - minio
     networks:
@@ -89,34 +86,34 @@ services:
           - node.hostname == sw1
     entrypoint: >
       /bin/bash -c "
-       sleep 10 ;
-       /usr/bin/mc alias set myminio http://minio:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD ;
-       for bucket in $BUCKETS ; do
-         if ! /usr/bin/mc ls myminio/$$bucket ; then
-           /usr/bin/mc mb myminio/$$bucket ;
-           /usr/bin/mc policy set public myminio/$$bucket ;
-         fi ;
-       done ;
-       if ! /usr/bin/mc admin policy info myminio mimir-policy; then
-        /usr/bin/mc admin policy create myminio mimir-policy /tmp/mimir-policy.json;
-       fi;
-       if ! /usr/bin/mc admin policy info myminio loki-policy; then
-        /usr/bin/mc admin policy create myminio loki-policy /tmp/loki-policy.json;
-       fi;
-       if ! /usr/bin/mc admin policy info myminio backup-policy; then
-        /usr/bin/mc admin policy create myminio backup-policy /tmp/backup-policy.json;
-       fi;
-       if ! /usr/bin/mc admin user info myminio $MINIO_MIMIR_USER; then
-         /usr/bin/mc admin user add myminio $MINIO_MIMIR_USER $MINIO_MIMIR_PASSWORD;
-         /usr/bin/mc admin policy attach myminio mimir-policy --user $MINIO_MIMIR_USER
-       fi;
-       if ! /usr/bin/mc admin user info myminio $MINIO_BACKUP_USER; then
-         /usr/bin/mc admin user add myminio $MINIO_BACKUP_USER $MINIO_BACKUP_PASSWORD;
-         /usr/bin/mc admin policy attach myminio backup-policy --user $MINIO_BACKUP_USER
-       fi;
-       if ! /usr/bin/mc admin user info myminio $MINIO_LOKI_USER; then
-         /usr/bin/mc admin user add myminio $MINIO_LOKI_USER $MINIO_LOKI_PASSWORD;
-         /usr/bin/mc admin policy attach myminio backup-policy --user $MINIO_LOKI_USER
-       fi;
-       exit 0;
+        sleep 10 ;
+        /usr/bin/mc alias set myminio http://minio:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD ;
+        for bucket in $BUCKETS ; do
+          if ! /usr/bin/mc ls myminio/$$bucket ; then
+            /usr/bin/mc mb myminio/$$bucket ;
+            /usr/bin/mc policy set public myminio/$$bucket ;
+          fi ;
+        done ;
+        if ! /usr/bin/mc admin policy info myminio mimir-policy; then
+          /usr/bin/mc admin policy create myminio mimir-policy /tmp/mimir-policy.json;
+        fi;
+        if ! /usr/bin/mc admin policy info myminio loki-policy; then
+          /usr/bin/mc admin policy create myminio loki-policy /tmp/loki-policy.json;
+        fi;
+        if ! /usr/bin/mc admin policy info myminio backup-policy; then
+          /usr/bin/mc admin policy create myminio backup-policy /tmp/backup-policy.json;
+        fi;
+        if ! /usr/bin/mc admin user info myminio $MINIO_MIMIR_USER; then
+          /usr/bin/mc admin user add myminio $MINIO_MIMIR_USER $MINIO_MIMIR_PASSWORD;
+          /usr/bin/mc admin policy attach myminio mimir-policy --user $MINIO_MIMIR_USER
+        fi;
+        if ! /usr/bin/mc admin user info myminio $MINIO_BACKUP_USER; then
+          /usr/bin/mc admin user add myminio $MINIO_BACKUP_USER $MINIO_BACKUP_PASSWORD;
+          /usr/bin/mc admin policy attach myminio backup-policy --user $MINIO_BACKUP_USER
+        fi;
+        if ! /usr/bin/mc admin user info myminio $MINIO_LOKI_USER; then
+          /usr/bin/mc admin user add myminio $MINIO_LOKI_USER $MINIO_LOKI_PASSWORD;
+          /usr/bin/mc admin policy attach myminio backup-policy --user $MINIO_LOKI_USER
+        fi;
+        exit 0;
       "

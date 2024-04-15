@@ -16,12 +16,7 @@ services:
       - REPMGR_PARTNER_NODES=pg-1,pg-2
       - REPMGR_NODE_NAME=pg-1
       - REPMGR_NODE_NETWORK_NAME=pg-1
-    deploy:
-      replicas: 1
-      placement:
-        max_replicas_per_node: 1
-        constraints:
-          - node.labels.pg == true
+
   pg-2:
     image: bitnami/postgresql-repmgr:16
     hostname: pg-2

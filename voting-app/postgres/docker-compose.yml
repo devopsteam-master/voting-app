@@ -20,8 +20,6 @@ services:
       replicas: 2
       placement:
         max_replicas_per_node: 1
-        constraints:
-          - node.labels.pg == true
 
   pgpool:
     image: bitnami/pgpool:4
