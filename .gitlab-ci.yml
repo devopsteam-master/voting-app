@@ -67,7 +67,7 @@ container_scanning:
   before_script:
     - ''
   needs:
-    - test-vote
+    - job-test
   variables:
     CS_IMAGE: $IMAGE_PATH/vote:latest
   rules:
@@ -76,14 +76,14 @@ container_scanning:
 container_scanning_worker:
   extends: container_scanning
   needs:
-    - test-worker
+    - job-test
   variables:
     CS_IMAGE: $IMAGE_PATH/worker:latest
 
 container_scanning_result:
   extends: container_scanning
   needs:
-    - test-result
+    - job-test
   variables:
     CS_IMAGE: $IMAGE_PATH/result:latest
 
