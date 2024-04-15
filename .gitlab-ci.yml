@@ -49,28 +49,18 @@ job-result:
 #   changes:
 #     - "voting-app/result/*"
 
-test-vote:
+job-test:
   stage: test
   script:
     - docker pull $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA
-    - echo "test is going on ..."
-    - docker tag $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA $IMAGE_PATH/vote:latest
-    - docker push $IMAGE_PATH/vote:latest
-
-test-worker:
-  stage: test
-  script:
     - docker pull $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA
-    - echo "test is going on ..."
-    - docker tag $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA $IMAGE_PATH/worker:latest
-    - docker push $IMAGE_PATH/worker:latest
-
-test-result:
-  stage: test
-  script:
     - docker pull $IMAGE_PATH/result:$CI_COMMIT_SHORT_SHA
-    - echo "test is going on ..."
+    - docker compose -f voting-app/result/docker-compose.test.yml
+    - docker tag $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA $IMAGE_PATH/vote:latest
+    - docker tag $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA $IMAGE_PATH/worker:latest
     - docker tag $IMAGE_PATH/result:$CI_COMMIT_SHORT_SHA $IMAGE_PATH/result:latest
+    - docker push $IMAGE_PATH/vote:latest
+    - docker push $IMAGE_PATH/worker:latest
     - docker push $IMAGE_PATH/result:latest
 
 container_scanning:

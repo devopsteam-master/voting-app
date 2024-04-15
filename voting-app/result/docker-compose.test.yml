@@ -1,5 +1,3 @@
-version: '2'
-
 services:
 
   sut:
@@ -12,7 +10,8 @@ services:
       - front-tier
 
   vote:
-    build: ../vote/
+#   build: ../vote/
+    image: $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA
     ports: ["80"]
     depends_on:
       - redis
@@ -22,7 +21,8 @@ services:
       - back-tier
 
   result:
-    build: .
+#   build: .
+    image: $IMAGE_PATH/result:$CI_COMMIT_SHORT_SHA
     ports: ["80"]
     depends_on:
       - redis
@@ -32,7 +32,8 @@ services:
       - back-tier
 
   worker:
-    build: ../worker/
+#   build: ../worker/
+    image: $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA
     depends_on:
       - redis
       - db
@@ -45,7 +46,7 @@ services:
       - back-tier
 
   db:
-    image: postgres:9.4
+    image: postgres:16-alpine
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
