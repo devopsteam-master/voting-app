@@ -101,8 +101,8 @@ deploy-to-preproduction:
   stage: deploy
   variables:
     DOMAIN: pre.arman.fun
-    SERVER_NAME: production.harimi.ir
-    HOSTNAME: production
+    SERVER_NAME: preProduction.harimi.ir
+    HOSTNAME: preProduction
     SSH_USER: user
     SSH_PORT: 22
     SERVICE_PATH: monster
@@ -137,11 +137,11 @@ deploy-to-preproduction:
       [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH}
       cd ${SERVICE_PATH}/monlog/grafana
       tar czf provisioning.tar.gz ./dashboards ./datasources
-      cd
-      bash -c ${SERVICE_PATH}/deploy-single-node.sh
+      cd ~/${SERVICE_PATH}
+      bash -c deploy-single-node.sh
       "
   environment:
-    name: production
+    name: preProduction
     url: https://vote.$DOMAIN https://result.$DOMAIN
   when: always
 
@@ -178,16 +178,16 @@ deploy-to-production:
             voting-app/redis \
             voting-app/.env \
             voting-app/docker-compose.yml \
-            deploy-single-node.sh \
+            deploy.sh \
           monster:~/${SERVICE_PATH}
       ssh monster "
       [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH}
       cd ${SERVICE_PATH}/monlog/grafana
       tar czf provisioning.tar.gz ./dashboards ./datasources
-      cd
-      bash -c ${SERVICE_PATH}/deploy.sh
+      cd ~/${SERVICE_PATH}
+      bash -c deploy.sh
       "
   environment:
     name: production
-    url: https://vote.$DOMAIN
+    url: https://vote.$DOMAIN https://result.$DOMAIN
   when: manual
