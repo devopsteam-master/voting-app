@@ -55,7 +55,7 @@ job-test:
     - docker pull $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA
     - docker pull $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA
     - docker pull $IMAGE_PATH/result:$CI_COMMIT_SHORT_SHA
-    - docker compose -f voting-app/result/docker-compose.test.yml
+    - docker compose -f voting-app/result/docker-compose.test.yml up
     - docker tag $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA $IMAGE_PATH/vote:latest
     - docker tag $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA $IMAGE_PATH/worker:latest
     - docker tag $IMAGE_PATH/result:$CI_COMMIT_SHORT_SHA $IMAGE_PATH/result:latest
