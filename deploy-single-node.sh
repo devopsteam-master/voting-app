@@ -10,13 +10,13 @@ done
 source traefik/.env
 docker stack deploy -c traefik/docker-compose.yml --detach=true traefik
 
-source voting-app/postgres/.env
-docker stack deploy -c voting-app/postgres/docker-compose-single-node.yml --detach=true pg
+source postgres/.env
+docker stack deploy -c postgres/docker-compose-single-node.yml --detach=true pg
 
-source voting-app/redis/.env
-docker stack deploy -c voting-app/redis/docker-compose.yml --detach=true redis
+source redis/.env
+docker stack deploy -c redis/docker-compose.yml --detach=true redis
 
-source voting-app/.env
+source .env
 docker stack deploy -c voting-app/docker-compose.yml --with-registry-auth --resolve-image always --detach=true app
 
 source minio/.env
