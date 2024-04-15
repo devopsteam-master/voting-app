@@ -138,7 +138,7 @@ deploy-to-preproduction:
       cd ${SERVICE_PATH}/monlog/grafana
       tar czf provisioning.tar.gz ./dashboards ./datasources
       cd ~/${SERVICE_PATH}
-      bash -c deploy-single-node.sh
+      bash -c ./deploy-single-node.sh
       "
   environment:
     name: preProduction
@@ -185,7 +185,7 @@ deploy-to-production:
       cd ${SERVICE_PATH}/monlog/grafana
       tar czf provisioning.tar.gz ./dashboards ./datasources
       cd ~/${SERVICE_PATH}
-      bash -c deploy.sh
+      bash -c ./deploy.sh
       "
   environment:
     name: production
