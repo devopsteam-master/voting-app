@@ -101,7 +101,7 @@ deploy-to-preproduction:
   stage: deploy
   variables:
     DOMAIN: pre.arman.fun
-    SERVER_NAME: preProduction.harimi.ir
+    SERVER_NAME: pre.arman.fun
     HOSTNAME: preProduction
     SSH_USER: user
     SSH_PORT: 22
@@ -114,7 +114,7 @@ deploy-to-preproduction:
     - eval "$(ssh-agent -s)"
     - ssh-add ~/.ssh/id_rsa
     - echo "Host monster" > ~/.ssh/config
-    - echo "  HostName $DOMAIN" >> ~/.ssh/config
+    - echo "  HostName $SERVER_NAME" >> ~/.ssh/config
     - echo "  User $SSH_USER" >> ~/.ssh/config
     - echo "  Port $SSH_PORT" >> ~/.ssh/config
     - echo "  StrictHostKeyChecking no" >> ~/.ssh/config
@@ -133,11 +133,11 @@ deploy-to-preproduction:
             deploy-single-node.sh \
           monster:~/${SERVICE_PATH}
       ssh monster "
-      export DOMAIN=${DOMAIN}
       [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH}
       cd ${SERVICE_PATH}/monlog/grafana
       tar czf provisioning.tar.gz ./dashboards ./datasources
       cd ~/${SERVICE_PATH}
+      export DOMAIN=${DOMAIN}
       bash -c ./deploy-single-node.sh
       "
   environment:
@@ -162,7 +162,7 @@ deploy-to-production:
     - eval "$(ssh-agent -s)"
     - ssh-add ~/.ssh/id_rsa
     - echo "Host monster" > ~/.ssh/config
-    - echo "  HostName $DOMAIN" >> ~/.ssh/config
+    - echo "  HostName $SERVER_NAME" >> ~/.ssh/config
     - echo "  User $SSH_USER" >> ~/.ssh/config
     - echo "  Port $SSH_PORT" >> ~/.ssh/config
     - echo "  StrictHostKeyChecking no" >> ~/.ssh/config
