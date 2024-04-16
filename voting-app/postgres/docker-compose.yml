@@ -64,10 +64,11 @@ services:
 
 volumes:
   pg_data:
+    name: pg_data
   pg_backup:
+    name: pg_backup
 
 networks:
   pg_net:
     external: true
     name: pg_net
-    driver: overlay

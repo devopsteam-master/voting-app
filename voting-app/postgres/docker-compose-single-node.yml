@@ -71,18 +71,16 @@ services:
     command: ["sh", "-c", "echo '5 0 * * * /usr/bin/pg_dump -U $$POSTGRES_USERNAME -d $$POSTGRES_DATABASE > /backup/backup.sql' > /etc/crontabs/root && crond -f -L /dev/stdout"]
     depends_on:
       - pgpool
-    deploy:
-      placement:
-        constraints:
-          - node.labels.pg == true
 
 volumes:
   pg_data:
+    name: pg_data
   pg_data-2:
+    name: pg_data-2
   pg_backup:
+    name: pg_backup
 
 networks:
   pg_net:
     external: true
     name: pg_net
-    driver: overlay

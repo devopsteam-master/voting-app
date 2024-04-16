@@ -51,6 +51,10 @@ job-result:
 
 job-test:
   stage: test
+  needs:
+    - job-vote
+    - job-worker
+    - job-result
   script:
     - docker pull $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA
     - docker pull $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA
@@ -137,7 +141,7 @@ deploy-to-preproduction:
   environment:
     name: preProduction
     url: https://vote.$DOMAIN
-  when: always
+  when: on_success
 
 deploy-to-production:
   stage: deploy
