@@ -62,6 +62,8 @@ job-test:
     - docker push $IMAGE_PATH/vote:latest
     - docker push $IMAGE_PATH/worker:latest
     - docker push $IMAGE_PATH/result:latest
+  after_script:
+    - docker compose -f voting-app/result/docker-compose.test.yml down -v
 
 container_scanning:
   before_script:
