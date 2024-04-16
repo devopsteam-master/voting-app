@@ -43,13 +43,21 @@ services:
   nginx:
     image: nginx:alpine
     hostname: redis
-    configs:
-      - source: nginx
-        target: /etc/nginx/nginx.conf
     depends_on:
       - redis-server
     networks:
       - back-tier
+    command: /bin/sh -c "echo 'events { worker_connections 1024; }
+      stream {
+        server {
+            listen 6379;
+            proxy_pass redis:6379;
+        }
+        server {
+            listen 6380;
+            proxy_pass redis:6379;
+        }
+      }' > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
 
   redis-server:
     image: redis:alpine
@@ -64,10 +72,6 @@ services:
       POSTGRES_PASSWORD: "postgres"
     networks:
       - back-tier
-
-configs:
-  nginx:
-    file: ./nginx.conf
 
 networks:
   front-tier:
