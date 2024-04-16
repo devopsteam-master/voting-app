@@ -43,8 +43,9 @@ services:
   nginx:
     image: nginx:alpine
     hostname: redis
-    volumes:
-      - ./nginx:/etc/nginx/
+    configs:
+      - source: nginx
+        target: /etc/nginx/nginx.conf
     depends_on:
       - redis-server
     networks:
@@ -63,6 +64,10 @@ services:
       POSTGRES_PASSWORD: "postgres"
     networks:
       - back-tier
+
+configs:
+  nginx:
+    file: ./nginx.conf
 
 networks:
   front-tier:
