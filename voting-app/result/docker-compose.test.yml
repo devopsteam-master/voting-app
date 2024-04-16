@@ -10,8 +10,8 @@ services:
       - front-tier
 
   vote:
-#   build: ../vote/
-    image: $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA
+    build: ../vote/
+#   image: $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA
     ports: ["80"]
     depends_on:
       - nginx
@@ -21,8 +21,8 @@ services:
       - back-tier
 
   result:
-#   build: .
-    image: $IMAGE_PATH/result:$CI_COMMIT_SHORT_SHA
+    build: .
+#   image: $IMAGE_PATH/result:$CI_COMMIT_SHORT_SHA
     ports: ["80"]
     depends_on:
       - nginx
@@ -32,8 +32,8 @@ services:
       - back-tier
 
   worker:
-#   build: ../worker/
-    image: $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA
+    build: ../worker/
+#   image: $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA
     depends_on:
       - nginx
       - db
@@ -47,15 +47,15 @@ services:
       - redis-server
     networks:
       - back-tier
-    command: /bin/sh -c "echo 'events { worker_connections 1024; }
+    command: /bin/sh -c "echo 'events { worker_connections 2048; }
       stream {
         server {
             listen 6379;
-            proxy_pass redis:6379;
+            proxy_pass redis-server:6379;
         }
         server {
             listen 6380;
-            proxy_pass redis:6379;
+            proxy_pass redis-server:6379;
         }
       }' > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
 
