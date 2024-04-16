@@ -89,6 +89,8 @@ container_scanning_result:
 
 deploy-to-preproduction:
   stage: deploy
+  needs:
+    - job-test
   variables:
     DOMAIN: pre.arman.fun
     SERVER_NAME: pre.arman.fun
