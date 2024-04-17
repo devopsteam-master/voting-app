@@ -28,12 +28,14 @@
 - name: Configure firewalld for Docker Swarm
   become: true
   ansible.posix.firewalld:
-    port:
-      - 2377/tcp
-      - 7946/tcp
-      - 7946/udp
-      - 4789/udp
+    port: "{{ item.port }}/{{ item.protocol }}"
+    state: "{{ item.state }}"
+    immediate: true
     permanent: true
-    state: enabled
   notify: Restart firewalld
+  loop:
+    - { port: 2377, protocol: tcp, state: enabled }
+    - { port: 7946, protocol: tcp, state: enabled }
+    - { port: 7946, protocol: udp, state: enabled }
+    - { port: 4789, protocol: udp, state: enabled }
   tags: swarm
