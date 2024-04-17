@@ -51,7 +51,7 @@ This Docker Compose configuration is designed to facilitate disaster recovery by
 
 Components:
 
-1. Restore Service (restore):
+1. **Restore Service (restore):**
 
 Image: mazzolino/restic
 Environment Variables:
@@ -62,18 +62,18 @@ TZ: Timezone setting, used for timestamping operations.
 AWS_ACCESS_KEY_ID: Access key ID for accessing the backup storage (e.g., MinIO).
 AWS_SECRET_ACCESS_KEY: Secret access key for accessing the backup storage.
 
-Volumes:
+**Volumes:**
 ./data/restore:/mnt/volumes: Mounts a local directory (./data/restore) to /mnt/volumes inside the container, where restored data will be placed.
 
-Networks:
+**Networks:**
 minio: Connects the service to a network named minio, which is assumed to be the network where the backup storage (e.g., MinIO) is accessible.
 
-Entrypoint and Command:
+**Entrypoint and Command:**
 
 Sets the entrypoint to /bin/sh -c.
 Executes the Restic command to restore the latest backup from the repository to the specified target directory.
 
-2. External Network (minio):
+2. **External Network (minio):**
 
 This configuration assumes the existence of an external network named minio, which is used to connect the restore service to the backup storage service (e.g., MinIO). Please ensure that this network is properly configured and accessible before deploying the Compose stack.
 
@@ -99,7 +99,7 @@ docker-compose logs -f restore
 
 6. Once the restoration process is complete, verify that the data has been successfully restored to the target directory (./data/restore in this example).
 
-Important Notes:
+**Important Notes:**
 
 Ensure that the backup repository and associated storage (e.g., MinIO) are properly configured and accessible before initiating the restoration process.
 
