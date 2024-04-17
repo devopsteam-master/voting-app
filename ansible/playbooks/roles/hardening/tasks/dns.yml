@@ -35,7 +35,7 @@
 - name: Update resolv.conf
   become: true
   ansible.builtin.lineinfile:
-    path: /etc/resolv.confz
+    path: /etc/resolv.conf
     regexp: '^nameserver \d+\.\d+\.\d+\.\d+'
     line: "nameserver 4.2.2.4" # {{ item }}"
     state: present

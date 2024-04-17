@@ -26,6 +26,6 @@
   ansible.builtin.import_tasks: dns.yml
   tags: dns
 
-- name: lynis
+- name: Lynis
   ansible.builtin.import_tasks: lynis.yml
   tags: lynis
