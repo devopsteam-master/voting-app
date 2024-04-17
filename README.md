@@ -48,12 +48,11 @@ The  `.gitlab-ci.yml`  file defines the CI/CD pipeline stages:
 -   **Test**: Runs automated tests to ensure the application is functioning correctly.
 -   **Deploy**: Deploys the application to specified environments based on the pipeline configuration.
 
-
 # Services Overview
 
-#### Voting App
-
 ![DLP](dlp.gif)
+
+#### Voting App
 
 -   **Python App (Vote Service):**  A Flask-based web application allowing users to vote between two options. It's deployed with Docker and scales across multiple instances for high availability.
 -   **Node.js App (Result Service):**  A Node.js application that displays the voting results in real time. It queries the PostgreSQL database and presents an interface with live updates using WebSockets.

@@ -24,3 +24,18 @@
   notify: Restart firewalld
   loop:
     - { service: ssh, port: '{{ ssh_port }}', protocol: tcp, state: enabled }
+    - { service: http, port: 80, protocol: tcp, state: enabled }
+    - { service: https, port: 443, protocol: tcp, state: enabled }
+
+- name: Configure firewalld for Docker Swarm
+  become: true
+  ansible.posix.firewalld:
+    port:
+      - 2377/tcp
+      - 7946/tcp
+      - 7946/udp
+      - 4789/udp
+    permanent: true
+    state: enabled
+  notify: Restart firewalld
+  tags: swarm
