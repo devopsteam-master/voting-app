@@ -1,5 +1,6 @@
 ---
 - name: Hardening ssh
+  become: true
   ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^#?{{ item.option }}'
@@ -29,6 +30,7 @@
     - { option: AllowAgentForwarding, value: "NO"}
 
 - name: Display SSH Banner
+  become: true
   ansible.builtin.copy:
     src: banner.txt
     dest: /etc/ssh/banner
