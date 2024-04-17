@@ -13,7 +13,7 @@ include:
 
 variables:
   IMAGE_PATH: $DOCKER_REGISTRY_ADDR/monster
-  DOCKER_REGISTRY_ADDR: reg.arman.fun
+  DOCKER_REGISTRY_ADDR: docker.arman.fun
   DOCKER_REGISTRY_USER: admin
   DOCKER_REGISTRY_PASSWORD: repo.harimi.ir
   CS_REGISTRY_USER: $DOCKER_REGISTRY_USER

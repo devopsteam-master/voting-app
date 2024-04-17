@@ -30,6 +30,7 @@ services:
       SEMAPHORE_ADMIN: admin
       SEMAPHORE_ACCESS_KEY_ENCRYPTION: gs72mPntFATGJs9qK0pQ0rKtfidlexiMjYCH9gWKhTU=
       SEMAPHORE_LDAP_ACTIVATED: 'no' # if you wish to use ldap, set to: 'yes' 
+      ANSIBLE_HOST_KEY_CHECKING: 'False'
     labels:
       - "logging=promtail"
       - "logging_jobname=containerlogs"
