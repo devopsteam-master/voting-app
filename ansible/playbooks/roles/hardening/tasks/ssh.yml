@@ -1,9 +1,9 @@
 ---
-- name: Set SSH Protocol Version to 2
+- name: Hardening ssh
   ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^#?{{ item.option }}'
-    line: "{{ item.item.option }} {{ item.value }}"
+    line: "{{ item.option }} {{ item.value }}"
   notify: Restart sshd
   loop:
     - { option: AllowTcpForwarding, value: "NO"}
