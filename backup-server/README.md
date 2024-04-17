@@ -86,11 +86,16 @@ This configuration assumes the existence of an external network named minio, whi
 3. Update the RESTIC_RESTORE_SOURCES environment variable to point to the directory or path within the backup repository containing the data to be restored.
 
 4. Deploy the Docker Compose stack using the provided configuration:
+
+```bash
  docker-compose up -d
+```
 
 5. Monitor the restoration process using Docker logs:
 
+```bash
 docker-compose logs -f restore
+```
 
 6. Once the restoration process is complete, verify that the data has been successfully restored to the target directory (./data/restore in this example).
 
