@@ -58,12 +58,14 @@
 
     - name: Add Docker daemon configuration file
       vars:
-        - docker_registry= repo.arman.fun
+        docker_registry: repo.arman.fun
       ansible.builtin.copy:
         content: |
           {
-          "insecure-registries" : "{{ docker_registry }}",
-          "registry-mirrors": "{{ docker_registry }}"
+          "insecure-registries" : ["https://{{ docker_registry }}"],
+          "registry-mirrors": ["https://{{ docker_registry }}"],
+          "metrics-addr" : "0.0.0.0:9323",
+          "experimental" : true
           }
         dest: /etc/docker/daemon.json
         mode: "0644"
