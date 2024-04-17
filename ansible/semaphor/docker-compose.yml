@@ -12,10 +12,9 @@ services:
       MYSQL_DATABASE: semaphore
       MYSQL_USER: semaphore
       MYSQL_PASSWORD: semaphore
+
   semaphore:
     restart: unless-stopped
-#   ports:
-#     - 3000:3000
     image: semaphoreui/semaphore:latest
     environment:
       SEMAPHORE_DB_USER: semaphore
@@ -33,15 +32,15 @@ services:
       SEMAPHORE_LDAP_ACTIVATED: 'no' # if you wish to use ldap, set to: 'yes' 
     labels:
       - "logging=promtail"
-#     - "logging_jobname=containerlogs"
+      - "logging_jobname=containerlogs"
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-net"
       - "traefik.http.routers.semaphore.entrypoints=http"
-      - "traefik.http.routers.semaphore.rule=Host(`${VOTE_SUB}.${DOMAIN_ADDRESS}`)"
+      - "traefik.http.routers.semaphore.rule=Host(`${SEMAPHORE_SUB}.${DOMAIN_ADDRESS}`)"
       - "traefik.http.routers.semaphore.middlewares=https-redirect"
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.semaphore-secure.entrypoints=https"
-      - "traefik.http.routers.semaphore-secure.rule=Host(`${VOTE_SUB}.${DOMAIN_ADDRESS}`)"
+      - "traefik.http.routers.semaphore-secure.rule=Host(`${SEMAPHORE_SUB}.${DOMAIN_ADDRESS}`)"
       - "traefik.http.routers.semaphore-secure.tls=true"
       - "traefik.http.routers.semaphore-secure.tls.certresolver=mycert"
       - "traefik.http.services.semaphore.loadbalancer.server.port=3000"

@@ -1,19 +1,20 @@
 ---
-- name: Lets Go
+- name: Installing Docker
   hosts: all
   become: true
   gather_facts: true
   tasks:
     - name: Update /etc/resolv.conf
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/resolv.conf
         line: 'nameserver {{ item.nameserver }}'
         state: '{{ item.state }}'
       loop:
-        - { nameserver: 10.202.10.102 ,state: present }
-        - { nameserver: 10.202.10.202 ,state: present }
-        - { nameserver: 1.1.1.1 ,state: absent }
-        - { nameserver: 8.8.8.8 ,state: absent }
+        - { nameserver: 10.202.10.102, state: present }
+        - { nameserver: 10.202.10.202, state: present }
+        - { nameserver: 1.1.1.1, state: absent }
+        - { nameserver: 8.8.8.8, state: absent }
+      tags: filternet
     - name: Uninstall all conflicting packages
       ansible.builtin.apt:
         name:
@@ -50,24 +51,27 @@
         state: present
         update_cache: true
     - name: Add ansible_user to Docker group
-      user:
+      ansible.builtin.user:
         name: "{{ ansible_user }}"
         groups: docker
-        append: yes
+        append: true
 
     - name: Add Docker daemon configuration file
-      copy:
+      vars:
+        - docker_registry= repo.arman.fun
+      ansible.builtin.copy:
         content: |
           {
-          "insecure-registries" : ["https://docker.arvancloud.ir"],
-          "registry-mirrors": ["https://docker.arvancloud.ir"]
+          "insecure-registries" : "{{ docker_registry }}",
+          "registry-mirrors": "{{ docker_registry }}"
           }
         dest: /etc/docker/daemon.json
-        mode: 0644
+        mode: "0644"
       notify: Restart Docker daemon
+      tags: filternet
 
   handlers:
     - name: Restart Docker daemon
-      service:
+      ansible.builtin.service:
         name: docker
         state: restarted

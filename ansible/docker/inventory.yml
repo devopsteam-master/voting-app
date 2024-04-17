@@ -1,8 +1,0 @@
-all:
-  hosts:
-    harimi:
-#     ansible_user: debian
-#   5.34.199.135:
-#     ansible_user: debian
-#   5.34.199.149:
-#     ansible_user: debian
