@@ -77,7 +77,7 @@ container_scanning:
   variables:
     CS_IMAGE: $IMAGE_PATH/vote:latest
   rules:
-    - when: on_success
+    - when: manual
 
 container_scanning_worker:
   extends: container_scanning
