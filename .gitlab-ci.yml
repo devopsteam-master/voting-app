@@ -51,10 +51,6 @@ job-result:
 
 job-test:
   stage: test
-  needs:
-    - job-vote
-    - job-worker
-    - job-result
   script:
     - docker pull $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA
     - docker pull $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA
@@ -68,6 +64,10 @@ job-test:
     - docker push $IMAGE_PATH/result:latest
   after_script:
     - docker compose -f voting-app/result/docker-compose.test.yml down -v
+  only:
+    changes:
+      - "voting-app/*"
+    
 
 container_scanning:
   before_script:
