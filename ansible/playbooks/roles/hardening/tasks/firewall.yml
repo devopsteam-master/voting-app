@@ -15,17 +15,15 @@
 - name: Enable basic firewall rules
   become: true
   ansible.posix.firewalld:
-    service: "{{ item.service }}"
-    port: "{{ item.port }}"
-    protocol: "{{ item.protocol }}"
+    port: "{{ item.port }}/{{ item.protocol }}"
     state: "{{ item.state }}"
     immediate: true
     permanent: true
   notify: Restart firewalld
   loop:
-    - { service: ssh, port: '{{ ssh_port }}', protocol: tcp, state: enabled }
-    - { service: http, port: 80, protocol: tcp, state: enabled }
-    - { service: https, port: 443, protocol: tcp, state: enabled }
+    - { port: '{{ ssh_port }}', protocol: tcp, state: enabled }
+    - { port: 80, protocol: tcp, state: enabled }
+    - { port: 443, protocol: tcp, state: enabled }
 
 - name: Configure firewalld for Docker Swarm
   become: true
