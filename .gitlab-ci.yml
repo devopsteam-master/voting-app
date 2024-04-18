@@ -25,9 +25,6 @@ job-vote:
     - cd voting-app/vote
     - docker build -t $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA .
     - docker push $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA
-  only:
-    changes:
-      - "voting-app/vote/*"
 
 job-worker:
   stage: build
@@ -35,9 +32,6 @@ job-worker:
     - cd voting-app/worker
     - docker build -t $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA .
     - docker push $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA
-  only:
-    changes:
-      - "voting-app/worker/*"
 
 job-result:
   stage: build
@@ -45,12 +39,13 @@ job-result:
     - cd voting-app/result
     - docker build -t $IMAGE_PATH/result:$CI_COMMIT_SHORT_SHA .
     - docker push $IMAGE_PATH/result:$CI_COMMIT_SHORT_SHA
-  only:
-    changes:
-      - "voting-app/result/*"
 
 job-test:
   stage: test
+  needs:
+    - job-vote
+    - job-worker
+    - job-result
   script:
     - docker pull $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA
     - docker pull $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA
@@ -64,10 +59,6 @@ job-test:
     - docker push $IMAGE_PATH/result:latest
   after_script:
     - docker compose -f voting-app/result/docker-compose.test.yml down -v
-  only:
-    changes:
-      - "voting-app/*"
-    
 
 container_scanning:
   before_script:
@@ -81,15 +72,11 @@ container_scanning:
 
 container_scanning_worker:
   extends: container_scanning
-  needs:
-    - job-test
   variables:
     CS_IMAGE: $IMAGE_PATH/worker:latest
 
 container_scanning_result:
   extends: container_scanning
-  needs:
-    - job-test
   variables:
     CS_IMAGE: $IMAGE_PATH/result:latest
 
