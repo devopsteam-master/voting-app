@@ -170,6 +170,7 @@ deploy-to-production:
       cd ${SERVICE_PATH}/monlog/grafana
       tar czf provisioning.tar.gz ./dashboards ./datasources
       cd ~/${SERVICE_PATH}
+      export DOMAIN=${DOMAIN}
       bash -c ./deploy.sh
       "
   environment:
