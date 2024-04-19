@@ -21,7 +21,7 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_REPLICATION_MODE=slave
       - REDIS_MASTER_HOST=redis-master
-      - REDIS_REPLICA_IP=redis-slave-{{.Task.Slot}}
+      - REDIS_REPLICA_IP=redis-slave{{.Task.Slot}}
     deploy:
       replicas: 2
       placement:

@@ -74,6 +74,9 @@ services:
       - minio
       - traefik-net
       - prometheus
+    environment: 
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: 
       - "server"
       - "--console-address"
