@@ -1,0 +1,8 @@
+all:
+  hosts:
+    sw1:
+      ansible_user: debian
+    sw2:
+      ansible_user: debian
+    sw3:
+      ansible_user: debian
