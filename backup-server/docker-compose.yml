@@ -1,4 +1,22 @@
 services:
+  pgbackups:
+    image: prodrigestivill/postgres-backup-local:16
+    volumes:
+      - pg_backup:/backups
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=${POSTGRESQL_DATABASE}
+      - POSTGRES_USER=${POSTGRESQL_DATABASE}
+      - POSTGRES_PASSWORD=${POSTGRESQL_POSTGRES_PASSWORD}
+      - POSTGRES_EXTRA_OPTS=-Z1 --schema=public --blobs
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=8080
+    networks:
+      - pg_net
+
   backup:
     image: mazzolino/restic
     environment:
@@ -12,9 +30,9 @@ services:
       AWS_ACCESS_KEY_ID: ${MINIO_BACKUP_USER} 
       AWS_SECRET_ACCESS_KEY: ${MINIO_BACKUP_PASSWORD} 
       POST_COMMANDS_SUCCESS: >-
-            sh -c "echo -e 'backup_status{status=\"success\", type=\"full\"} 1' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/backup-pgsql/"
+        sh -c "echo -e 'backup_status{status=\"success\", type=\"full\"} 1' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/backup-pgsql/"
       POST_COMMANDS_FAILURE: >-
-            sh -c "echo -e 'backup_status{status=\"failure\"} 0' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/backup-pgsql/"
+        sh -c "echo -e 'backup_status{status=\"failure\"} 0' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/backup-pgsql/"
     networks:
       - prometheus
       - minio
@@ -33,13 +51,12 @@ services:
       AWS_ACCESS_KEY_ID: ${MINIO_BACKUP_USER}
       AWS_SECRET_ACCESS_KEY: ${MINIO_BACKUP_PASSWORD}
       POST_COMMANDS_SUCCESS: |-
-            sh -c "echo -e 'chech_backup_status{status=\"success\", type=\"full\"} 1' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/prune_backup-pgsql/"
+        sh -c "echo -e 'chech_backup_status{status=\"success\", type=\"full\"} 1' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/prune_backup-pgsql/"
       POST_COMMANDS_FAILURE: |-
-            sh -c "echo -e 'prune_backup_status{status=\"failure\"} 0' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/prune_backup-pgsql/"
+        sh -c "echo -e 'prune_backup_status{status=\"failure\"} 0' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/prune_backup-pgsql/"
     networks:
       - minio
-    volumes:
-      - pg_backup:/mnt/volumes:ro
+      - prometheus
 
   check:
     image: mazzolino/restic
@@ -54,22 +71,20 @@ services:
       AWS_ACCESS_KEY_ID: ${MINIO_BACKUP_USER} 
       AWS_SECRET_ACCESS_KEY: ${MINIO_BACKUP_PASSWORD}
       POST_COMMANDS_SUCCESS: |-
-            sh -c "echo -e 'chech_backup_status{status=\"success\", type=\"full\"} 1' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/chech_backup-pgsql/"
+        sh -c "echo -e 'check_backup_status{status=\"success\", type=\"full\"} 1' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/chech_backup-pgsql/"
       POST_COMMANDS_FAILURE: |-
-            sh -c "echo -e 'chech_backup_status{status=\"failure\"} 0' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/chech_backup-pgsql/"
+        sh -c "echo -e 'check_backup_status{status=\"failure\"} 0' | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/chech_backup-pgsql/"
     networks:
       - minio
       - prometheus
-    volumes:
-      - pg_backup:/mnt/volumes:ro
 
 volumes:
   pg_backup:
-    external: true
-    name: pg_pg_backup
 
 networks:
   prometheus:
     external: true
   minio:
+    external: true
+  pg_net:
     external: true
