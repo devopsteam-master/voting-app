@@ -54,17 +54,18 @@ x-default-deploy: &default-deploy
     window: 120s
 
 x-default-labels: &default-labels
-  - "traefik.enable=true"
-  - "traefik.docker.network=traefik-net"
-  - "traefik.http.routers.minio.entrypoints=http"
-  - "traefik.http.routers.minio.rule=Host(`${MINIO_SUB}.${DOMAIN}`)"
-  - "traefik.http.routers.minio.middlewares=https-redirect"
-  - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-  - "traefik.http.routers.minio-secure.entrypoints=https"
-  - "traefik.http.routers.minio-secure.rule=Host(`${MINIO_SUB}.${DOMAIN}`)"
-  - "traefik.http.routers.minio-secure.tls=true"
-  - "traefik.http.routers.minio-secure.tls.certresolver=mycert"
-  - "traefik.http.services.minio.loadbalancer.server.port=9001"
+  labels:
+    - "traefik.enable=true"
+    - "traefik.docker.network=traefik-net"
+    - "traefik.http.routers.minio.entrypoints=http"
+    - "traefik.http.routers.minio.rule=Host(`${MINIO_SUB}.${DOMAIN}`)"
+    - "traefik.http.routers.minio.middlewares=https-redirect"
+    - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+    - "traefik.http.routers.minio-secure.entrypoints=https"
+    - "traefik.http.routers.minio-secure.rule=Host(`${MINIO_SUB}.${DOMAIN}`)"
+    - "traefik.http.routers.minio-secure.tls=true"
+    - "traefik.http.routers.minio-secure.tls.certresolver=mycert"
+    - "traefik.http.services.minio.loadbalancer.server.port=9001"
 
 services:
 
@@ -72,24 +73,20 @@ services:
     <<: *default-minio
     hostname: minio-1
     deploy:
-      <<: *default-deploy
+      <<: [*default-deploy, *default-labels]
       placement:
         constraints:
           - node.hostname == sw1
-      labels:
-        <<: *default-labels
         
 
   minio-2:
     <<: *default-minio
     hostname: minio-2
     deploy:
-      <<: *default-deploy
+      <<: [*default-deploy, *default-labels]
       placement:
         constraints:
           - node.hostname == sw2
-      labels:
-        <<: *default-labels
 
   createbuckets:
     image: quay.io/minio/mc:${MINIO_MC_VERSION:-latest}
