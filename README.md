@@ -2,9 +2,9 @@
 
 # Overview
 
-Welcome to the Monster repository, a comprehensive solution designed for deploying and managing a Docker Swarm-based application. This project is part of a DevOps class led by Mr. Ahmad Rafiee and focuses on practical, hands-on experience with modern DevOps tools and practices.
+Welcome to the Monster repository, a comprehensive solution designed for deploying and managing a Docker Swarm-based application. This project is part of a DevOps class led by [Mr. Ahmad Rafiee](https://github.com/AhmadRafiee) and focuses on practical, hands-on experience with modern DevOps tools and practices.
 
-This repository contains the infrastructure code and configurations necessary to deploy a multi-service application using Docker Swarm. It includes Docker Compose files, service definitions, and scripts for automated deployment and management.
+This repository contains the infrastructure code and configurations necessary to deploy [example-voting-app](https://github.com/dockersamples/example-voting-app) as a multi-service application using Docker Swarm. It includes Docker Compose files, service definitions, and scripts for automated deployment and management.
 
 # Features
 
@@ -13,6 +13,7 @@ This repository contains the infrastructure code and configurations necessary to
 -   **Security Scanning**: Integrated container scanning to ensure images are free from vulnerabilities.
 -   **Automated Testing**: Automated testing to ensure code changes do not break existing functionality.
 -   **Environment-Specific Deployment**: Support for deploying to different environments such as pre-production and production.
+-   **Monitoring and logging**: Comprehensive monitoring and logging capabilities for insight into application performance and operational health.
 
 # Prerequisites
 
@@ -91,6 +92,3 @@ This comprehensive setup ensures high availability, resilience, and scalability 
 # Contributing
 
 Contributions are welcome! Please read our contributing guidelines for how to propose changes to this project.
-## License
-
-This project is licensed under the [GNU General Public License v3.0](./LICENSE).
