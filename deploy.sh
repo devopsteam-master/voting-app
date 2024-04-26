@@ -4,7 +4,7 @@ set -a
 NETWORKS="traefik-net redis pg_net prometheus minio"
 for i in $NETWORKS
 do 
-  docker network create --driver=overlay $i
+  docker network create --attachable=true --driver=overlay $i
 done
 
 source traefik/.env
