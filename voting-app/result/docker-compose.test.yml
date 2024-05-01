@@ -13,6 +13,9 @@ services:
     build: ../vote/
 #   image: $IMAGE_PATH/vote:$CI_COMMIT_SHORT_SHA
     ports: ["80"]
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
     depends_on:
       - nginx
       - db
@@ -24,6 +27,8 @@ services:
     build: .
 #   image: $IMAGE_PATH/result:$CI_COMMIT_SHORT_SHA
     ports: ["80"]
+    environment:
+      - POSTGRES_CONNECTION_STRING=Server=db;Username=postgres;Password=postgres;
     depends_on:
       - nginx
       - db
@@ -34,6 +39,9 @@ services:
   worker:
     build: ../worker/
 #   image: $IMAGE_PATH/worker:$CI_COMMIT_SHORT_SHA
+    environment:
+      - POSTGRES_CONNECTION_STRING=Server=db;Username=postgres;Password=postgres;
+      - REDIS_CONNECTION_STRING=redis
     depends_on:
       - nginx
       - db

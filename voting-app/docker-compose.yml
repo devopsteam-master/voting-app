@@ -7,6 +7,8 @@ services:
     environment:
       - OPTION_A=${OPTION_A}
       - OPTION_B=${OPTION_B}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
     networks:
       - traefik-net
       - redis
