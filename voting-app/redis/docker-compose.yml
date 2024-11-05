@@ -15,8 +15,8 @@ services:
     hostname: redis-slave.{{.Task.Slot}}
     networks:
       - redis
-    depends_on:
-      - redis-master
+        #   depends_on:
+        # - redis-master
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_REPLICATION_MODE=slave
