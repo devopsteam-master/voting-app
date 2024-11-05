@@ -1,0 +1,9 @@
+---
+- name: install docker iran
+  import_tasks: install-docker-iran.yml
+  tags: install-docker-iran
+
+- name: install docker
+  import_tasks: install-docker.yml
+  tags: install-docker
+# 

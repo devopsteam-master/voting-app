@@ -1,0 +1,18 @@
+---
+- name: Create Nexus directories
+  file:
+    path: /opt/nexus
+    state: directory
+    mode: '0755'
+
+- name: Copy docker-compose.yml.j2 to remote server
+  template:
+    src: nexus-compose.yml.j2
+    dest: /opt/nexus/docker-compose.yml
+    mode: 0755
+    remote_src: yes
+
+- name: Copy .env file to the target machine
+  template:
+    src: env.j2
+    dest: /opt/nexus/.env

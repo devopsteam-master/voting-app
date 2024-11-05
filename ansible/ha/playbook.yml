@@ -1,0 +1,22 @@
+---
+- name: Hardening
+  hosts: all
+  gather_facts: true
+  ignore_errors: true
+  become: true
+  become_method: sudo
+  roles:
+    - role: harden
+      tags: harden
+    
+    - role: traefik
+      tags: traefik
+
+    - role: nexus
+      tags: nexus
+
+    - role: host
+      tags: host
+
+    - role: docker
+      tags: docker

@@ -1,0 +1,73 @@
+---
+# vars file for harden
+sshd_config:
+  #  PermitRootLogin: "without-password"
+  #  ListenAddress: "0.0.0.0."
+  #  PasswordAuthentication: "no"
+  Port: "3232"
+  # AllowUsers:
+  # AllowGroups:
+fail2ban:
+  backend: "systemd"
+  bantime: "20m"
+  findtime: "15m"
+  maxretry: "4"
+
+iptables:
+  network_adapter_access:
+    - eth0
+    - wlan0
+
+  tcp_port_access:
+    - 80    # HTTP
+    - 443   # HTTPS
+    - 8000  # Custom port
+    - 8080
+      #udp_port_access:
+    #- 53    # DNS
+    #- 123   # NTP
+    #trusted_IP:
+    #  - 192.168.1.20
+  # vars/main.yml
+grub:
+  grub_audit_cmdline: "audit=1"
+  grub_audit_backlog_cmdline: "audit_backlog_limit=8192"
+
+auditd:  
+  auditd_action_mail_acct: "root"
+  auditd_admin_space_left_action: "halt"
+  auditd_disk_error_action: "halt"
+  auditd_disk_full_action: "halt"
+  auditd_max_log_file: "8"
+  auditd_max_log_file_action: "rotate"
+  auditd_num_logs: "5"
+  auditd_space_left: "75"
+  auditd_space_left_action: "email"
+  auditd_apply_audit_rules: true
+
+my_user: "root"
+ssh_key_file: "/home/user/.ssh/id_rsa.pub"
+
+CLOUDFLARE_API_TOKEN: 'O4f-hl5dpYu_EAkKURl0hkf3e84gwXchHUCm1zSD' 
+Domain_Name: "webmoney.ir"  
+Record_Name: "test1"
+
+  #cloudflare_token: "{{ lookup('env', 'CLOUDFLARE_API_TOKEN') }}"  # API توکن
+  #zone_name: "webmoney.ir"  # نام دامنه
+  #dns_records:
+  #  - name: "st1.webmoney.ir"
+  #    type: "A"
+  #    value: "192.168.1.1"
+  #  - name: "st2"
+  #    type: "A"
+  #    value: "192.168.1.2"
+      #  - name: "record3.example.com"
+      #    type: "CNAME"
+      #    value: "example.com"
+      #  - name: "record4.example.com"
+      #    type: "MX"
+      #    value: "mail.example.com"
+      #    priority: 10  # رکوردهای MX نیاز به priority دارند
+      #  - name: "recordN.example.com"
+      #    type: "A"
+      #    value: "192.168.1.N"  

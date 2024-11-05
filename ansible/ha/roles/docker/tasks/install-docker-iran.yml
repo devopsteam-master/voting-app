@@ -1,0 +1,129 @@
+---
+#tasks file for docker
+- name: Update /etc/apt/sources.list.d/ordogah.list based on OS
+  ansible.builtin.apt_repository:
+    repo: "{{ item.repo }}"
+    filename: "ordogah"
+    state: "{{ item.state }}"
+  loop: "{{ repositories | selectattr('os', 'equalto', ansible_facts['distribution']) | list }}"
+  loop_control:
+    label: " Adding Ordogah Repository"
+  tags: filternet
+  
+  vars:
+    repositories:
+      # Debian repo
+      - { repo: "deb https://repo.cache.harimi.ir/repository/debian-bookworm/ bookworm main", state: present, os: "Debian" }
+      - { repo: "deb https://repo.cache.harimi.ir/repository/debian-bookworm/ bookworm-updates main", state: present, os: "Debian" }
+      - { repo: "deb https://repo.cache.harimi.ir/repository/debian-bookworm/ bookworm-backports main", state: present, os: "Debian" }
+      - { repo: "deb https://repo.cache.harimi.ir/repository/bookworm-security/ bookworm-security main", state: present, os: "Debian" }
+
+      # Ubuntu repo
+      - { repo: "deb https://repo.cache.harimi.ir/repository/ubuntu-main focal main", state: present, os: "Ubuntu" }
+      - { repo: "deb https://repo.cache.harimi.ir/repository/ubuntu-main focal-updates main", state: present, os: "Ubuntu" }
+      - { repo: "deb https://repo.cache.harimi.ir/repository/ubuntu-main focal-security main", state: present, os: "Ubuntu" }
+
+
+- name: Uninstall old versions
+  apt: 
+    name: "{{ item }}"
+    state: absent
+    purge: yes
+  loop: [docker-doc, docker.io, docker-compose, docker-compose-v2, podman-docker, containerd, run, docker-ce, docker-ce-cli, containerd.io, docker-buildx-plugin, docker-compose-plugin, docker-ce-rootless-extras]
+  tags: clear 
+  
+- name: Install required packages
+  apt:
+    update_cache: yes
+    name: "{{ item }}"
+  loop:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - software-properties-common
+    - gnupg
+  tags: install
+
+
+- name: Add apt key for Docker
+  ansible.builtin.apt_key:
+    url: "{{ item.url }}"
+    keyring: /etc/apt/keyrings/docker.gpg
+    state: present
+  with_items: "{{ dockerkeys | selectattr('os', 'equalto', ansible_facts['distribution']) | list }}"
+  loop_control:
+    label: " Adding Docker GPG Key"
+  tags: install
+
+  vars:
+      dockerkeys:
+        - { url: "{{ debian_gpg_address }}", os: "Debian" }
+        - { url: "{{ ubuntu_gpg_address }}", os: "Ubuntu" }
+
+- name: Add Docker repository
+  ansible.builtin.apt_repository:
+    repo: "{{ item.repo }}"
+    state: present
+  loop: "{{ repositories | selectattr('os', 'equalto', ansible_facts['distribution']) | list }}"
+  loop_control:
+    label: " Adding Docker Repository"
+  tags: install
+  
+  vars:
+    repositories:
+      - { repo: "{{ debianـrepo_address }}", os: "Debian" }
+      - { repo: "{{ ubuntuـrepo_address }}", os: "Ubuntu" }
+
+
+- name: Install Docker
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+    - docker-buildx-plugin
+    - docker-compose-plugin
+  tags: install
+
+- name: Creates directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/docker.service.d/
+    state: directory
+  tags: install
+
+- name: Add Docker daemon configuration file
+  ansible.builtin.copy:
+    content: |
+      {
+       "live-restore" : true, 
+       "insecure-registries" : ["https://{{ docker_registry }}"],
+       "registry-mirrors": ["https://{{ docker_registry }}"],
+       "metrics-addr" : "0.0.0.0:9323",
+       "experimental" : true
+      }
+    dest: /etc/docker/daemon.json
+    mode: "0644"
+  notify: Restart Docker daemon
+  tags: filternet
+
+#Manage non-root access
+- name: Add docker group
+  group:
+    name: docker
+    state: present
+  tags: user_access
+
+- name: get username
+  command: whoami
+  become: false
+  register: USER
+  tags: user_access
+
+- name: Add user to docker group
+  user:
+    name: "{{ USER.stdout}}"
+    groups: docker
+    append: true
+  tags: user_access

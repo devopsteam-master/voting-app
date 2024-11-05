@@ -1,0 +1,41 @@
+---
+# handlers file for harden
+- name: Restart_SSH
+  systemd:
+    name: sshd
+    state: restarted
+    enabled: yes
+
+- name: Restart_Fail2ban
+  systemd:
+    name: fail2ban
+    state: restarted
+    enabled: yes
+
+- name: Applying Kernel parameters
+  become: true
+  ansible.builtin.command:
+    cmd: sysctl --system
+      #register: sysctl_output
+      # changed_when: "'Applying /etc/sysctl.d/sysctl_harden.conf' in sysctl_output.stdout"    
+- name: restart auditd
+  systemd:
+    name: auditd
+    state: restarted
+    enabled: yes
+
+- name: generate auditd
+  become: 'yes'
+  ansible.builtin.command: augenrules      
+
+- name: Restart ntp
+  systemd:
+    name: ntp
+    state: restarted
+
+
+- name: Restart_iptables
+  systemd:
+    name: iptables.service
+    enabled: true
+    state: restarted

@@ -1,0 +1,41 @@
+---
+# tasks file for harden
+- name: install packages
+  import_tasks: packages.yml
+
+- name: Setup SSH configuration
+  import_tasks: ssh.yml
+
+- name: Setup fail2ban
+  import_tasks: fail2ban.yml
+
+- name: Setup kernel
+  import_tasks: kernel.yml
+
+- name: Setup Auditd
+  import_tasks: auditd.yml
+    
+- name: Setup NTP
+  import_tasks: ntp.yml
+    
+- name: Setup Firewall
+  import_tasks: iptables.yml
+
+- name: Setup passwdpolicy
+  import_tasks: passwdpolicy.yml
+
+- name: Setup dnsrecord
+  import_tasks: dnsrecord.yml
+
+- name: Setup logindefs
+  import_tasks: logindefs.yml
+
+- name: Include public-key
+  import_tasks: public-key.yml
+
+- name: Include ssh-inventory
+  import_tasks: change-ssh-inventory.yml
+
+    
+- name: Lynis Reporty
+  import_tasks: lynis.yml

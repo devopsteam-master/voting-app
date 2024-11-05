@@ -1,0 +1,37 @@
+---
+# vars file for create vm
+esxi_host: "esxi.example.com"
+esxi_user: "root"
+esxi_password: "password"
+datacenter_name: "Datacenter"
+cluster_name: "Cluster"
+vm_name: "test-vm"
+vm_template: "template_name"  # Replace with a valid template name
+datastore_name: "datastore1"
+folder_name: "/Datacenters/vm"
+network_name: "VM Network"
+
+
+# vars for Network 
+conn_name: 'eth0'
+ifname: 'eth0'
+type: 'ethernet'
+ip4: '192.168.1.10/24'
+gw4: '192.168.1.1'
+dns4:
+  - '8.8.8.8'
+  - '8.8.4.4'
+  - '217.218.127.127'
+    
+vcenter_hostname: "192.168.65.18"
+vcenter_username: "admin"
+vcenter_password: "*Elaheyegol*"
+esxi_hostname: "esxi.example.com"
+#datacenter_name: "Datacenter"
+#folder_name: "/DC1/vm/"
+#vm_name: "vm_01"
+#datastore_name: "datastore1"
+memory_mb: 2048
+num_cpus: 2
+iso_path: "[datastore1] ISO/debian-12.iso"  
+#network_name: "VM Network"

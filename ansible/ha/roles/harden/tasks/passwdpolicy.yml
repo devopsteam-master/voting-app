@@ -1,0 +1,18 @@
+- name: Force update PAM configuration non-interactively
+  ansible.builtin.shell: "DEBIAN_FRONTEND=noninteractive pam-auth-update --force"
+  become: yes
+
+- name: Copy passwdpolicy file to destination
+  ansible.builtin.copy:
+    src: passwdpolicy
+    dest: /etc/pam.d/common-password
+      #force: no 
+    mode: '0644'
+
+- name: Ensure dictcheck is set to 0
+  ansible.builtin.lineinfile:
+    path: /etc/security/pwquality.conf
+    regexp: '^#?dictcheck\s*='
+    line: 'dictcheck = 0'
+    state: present
+

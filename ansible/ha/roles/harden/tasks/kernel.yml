@@ -1,0 +1,7 @@
+- name: Kernel parameters (sysctl)
+  become: true
+  ansible.builtin.copy:
+    src: sysctl
+    dest: /etc/sysctl.d/sysctl_harden.conf
+    mode: '0664'
+  notify: Applying Kernel parameters

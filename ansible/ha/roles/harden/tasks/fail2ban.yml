@@ -1,0 +1,8 @@
+- name: Make fail2ban configuration file.
+  template:
+    src: fail2ban.j2
+    dest: /etc/fail2ban/jail.local
+  notify: Restart_Fail2ban
+
+
+

@@ -1,0 +1,4 @@
+- name: Copy banner file to destination
+  ansible.builtin.copy:
+    src: login.defs 
+    dest: /etc/login.defs

@@ -1,0 +1,4 @@
+---
+# tasks file for host
+- name: network-config
+  import_tasks: network-config.yml

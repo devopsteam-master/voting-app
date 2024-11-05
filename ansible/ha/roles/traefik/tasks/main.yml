@@ -1,0 +1,11 @@
+---
+# tasks file for traefik
+- name: copy file to destination
+  import_tasks: copy-docker-compose.yml
+  tags: traefik
+
+- name: start traefik 
+  import_tasks: start-traefik.yml
+  tags: traefik  
+
+

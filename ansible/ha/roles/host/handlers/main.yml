@@ -1,0 +1,7 @@
+---
+# handlers file for host
+- name: restart-netmanager
+  ansible.builtin.service:
+    name: NetworkManager
+    state: restarted
+

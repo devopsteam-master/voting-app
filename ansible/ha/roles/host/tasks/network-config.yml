@@ -1,0 +1,20 @@
+---
+# tasks/main.yml
+#- name: 
+#  community.general.nmcli:
+#    conn_name: "{{ conn_name }}"
+#    ifname: "{{ ifname }}"
+#    type: "{{ type }}"
+#    ip4: "{{ ip4 }}"
+#    gw4: "{{ gw4 }}"
+#    dns4: "{{ dns4 }}"
+#    state: present
+#
+#- name: ifupdown
+#  ansible.builtin.lineinfile:
+#    path: /etc/NetworkManager/NetworkManager.conf
+#    regexp: '^managed=false'
+#    line: 'managed=true'
+#    insertafter: '\[ifupdown\]'
+#  notify:
+#    - restart-netmanager    

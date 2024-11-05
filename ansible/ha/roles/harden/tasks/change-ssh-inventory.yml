@@ -1,0 +1,7 @@
+- name: Update SSH port in inventory on localhost
+  replace:
+    path: inventory/hosts.yml
+    regexp: 'ansible_port: 22'
+    replace: 'ansible_port: {{ sshd_config.Port }}'
+  delegate_to: localhost
+

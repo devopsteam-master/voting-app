@@ -1,0 +1,9 @@
+---
+# tasks file for Nex
+- name: copy_docker_compose to destination
+  import_tasks: copy_docker_compose.yml
+  tags: nexus 
+
+- name: start-nexus
+  import_tasks: start-nexus.yml
+  tags: nexus 

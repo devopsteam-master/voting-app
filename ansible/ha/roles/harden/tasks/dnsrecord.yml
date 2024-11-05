@@ -1,0 +1,44 @@
+---
+- name: Create DNS records in Cloudflare using API token
+  community.general.cloudflare_dns:
+    zone: "{{ zone_name }}"         # نام دامنه
+    type: "{{ item.type }}"         # نوع رکورد (A, CNAME, MX, ...)
+    name: "{{ item.name }}"         # نام رکورد
+    content: "{{ item.value }}"     # مقدار رکورد (IP یا CNAME)
+    api_token: "{{ CLOUDFLARE_API_TOKEN }}"  # توکن API
+  loop: "{{ dns_records }}"         # حلقه برای ساخت رکوردهای متعدد
+  delegate_to: localhost
+  tags: loop_record
+
+# name: Create a record using api token
+ # community.general.cloudflare_dns:
+ #   zone: webmoney.ir
+ #   record: test1
+ #   type: A
+ #   value: 10.10.10.10
+ #   api_token: "{{ CLOUDFLARE_API_TOKEN }}"      #O4f-hl5dpYu_EAkKURl0hkf3e84gwXchHUCm1zSD
+ # delegate_to: localhost
+ # tags: set_dns_record
+# name: Delete the record
+ # community.general.cloudflare_dns:
+ #   zone: "{{ Domain_Name }}"
+ #   record: "{{ Record_Name }}"
+ #   type: A
+ #   value: 10.10.10.10
+ #   account_email: test@example.com
+ #   api_token: "{{ CLOUDFLARE_API_TOKEN }}"
+ #   state: absent
+ # tags: delete_dns_record
+ #
+ #- name: Create a record using api token
+ #  community.general.cloudflare_dns:
+ #    zone: "{{ zone_name }}"
+ #    type: "{{ item.type }}"
+ #    record: "{{ item.name }}"
+ #    value: "{{ item.value }}"
+ #    ttl: 120
+ #    proxied: false
+ #    api_token: "{{ CLOUDFLARE_API_TOKEN }}"
+ #  loop: "{{ dns_records }}"
+ #  delegate_to: localhost
+ #  tags: loop_record

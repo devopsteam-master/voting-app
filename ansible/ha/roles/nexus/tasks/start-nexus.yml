@@ -1,0 +1,12 @@
+- name: Start Nexus
+  command: docker compose up -d
+  args:
+    chdir: /opt/nexus
+
+- name: Wait for 10 seconds after starting Nexus
+  ansible.builtin.wait_for:
+    timeout: 10
+    delay: 1
+    state: started
+    search_regex: '.*'
+

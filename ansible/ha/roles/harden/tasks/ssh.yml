@@ -1,0 +1,14 @@
+---
+- name: copy ssh-config to destination 
+  ansible.builtin.template:
+    src: sshd.j2
+    dest: /etc/ssh/sshd_config
+  notify: Restart_SSH
+
+- name: Copy banner file to destination
+  ansible.builtin.copy:
+    src: banner
+    dest: /etc/issue
+    mode: '0644'
+  notify: Restart_SSH    
+

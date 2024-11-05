@@ -1,0 +1,7 @@
+- name: Run Lynis audit
+  command: lynis audit system --no-colors
+  register: lynis_output
+
+- name: Display Hardening Index
+  debug:
+    msg: "{{ lynis_output.stdout | regex_search('Hardening index\\s*:\\s*\\d+\\s*\\[.*?\\]') }}"

@@ -1,0 +1,22 @@
+---
+- name: Create Traefik directories
+  file:
+    path: /opt/traefik/{{ item }}
+    state: directory
+    mode: '0755'
+  with_items:
+    - ""
+    - letsencrypt
+
+- name: Copy acme.json
+  copy:
+    src: acme.json
+    dest: /opt/traefik/letsencrypt/acme.json
+    mode: '0600'
+
+- name: Deploy Traefik Docker Compose file
+  template:
+    src: docker-compose.yml.j2
+    dest: /opt/traefik/docker-compose.yml
+    mode: '0600'
+

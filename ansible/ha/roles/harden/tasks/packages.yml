@@ -1,0 +1,35 @@
+---
+- name: Update and upgrade apt packages
+  become: true
+  ansible.builtin.apt:
+    upgrade: yes
+    update_cache: yes
+  when: ansible_os_family == 'Debian'
+
+- name: Install multiple packages using apt with loop
+  package:
+    name: "{{ item }}"
+    state: present
+      #update_cache: true
+  loop:
+    - curl
+    - vim
+    - git
+    - fail2ban
+    - lynis
+    - iptables-persistent
+    - ntp
+    - debsums
+    - apt-show-versions
+    - apt-listchanges
+    - auditd
+    - libpam-pwquality
+    - rkhunter
+    - clamav
+    - aptitude
+    - libpam-tmpdir
+    - network-manager
+
+- name: run aptitued purge
+  ansible.builtin.command:
+    cmd: aptitude purge
