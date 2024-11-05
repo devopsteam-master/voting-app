@@ -96,6 +96,7 @@ body{
 #choice .choice.cats{
   color: #2196f3;
   float: left;
+  padding-right: 30px;
 }
 #background-stats{
   z-index:1;

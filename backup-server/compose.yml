@@ -1,0 +1,46 @@
+services:
+  backup:
+    image: eeshugerman/postgres-backup-s3:16
+    #image: backupnew
+    networks:
+    - minio
+    - pg_net
+    environment:
+      SCHEDULE: '*/4 * * * *' # optional
+      BACKUP_KEEP_DAYS: 7 # optional
+      PASSPHRASE: passphrase # optional
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: region
+      AWS_ACCESS_KEY_ID: 7kGzXRsagvzEdzMOStCb
+      AWS_SECRET_ACCESS_KEY: sdPKn0msq0lDxNAWHjBGWzGwpwGHO88Cbf25dGET
+      S3_BUCKET: back-up
+      S3_PREFIX: backup
+      POSTGRES_HOST: db
+      POSTGRES_DATABASE: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      # volumes:
+      # - ./backup_restore.sh:/usr/local/bin/backup_restore.sh
+      # entrypoint: ["/bin/sh", "-c", "/usr/local/bin/backup_restore.sh restore"]
+      # command: >
+      #   /bin/sh -c "
+      #   echo 'Testing backup...';
+      #   pg_dump -h $POSTGRES_HOST -U $POSTGRES_USER $POSTGRES_DATABASE | gzip > /tmp/test_backup.sql.gz;
+      #   echo 'Backup created. Uploading to S3...';
+      #   aws --endpoint-url=http://minio:9000 s3 cp /tmp/test_backup.sql.gz s3://$S3_BUCKET/$S3_PREFIX/test_backup.sql.gz;
+      #   echo 'Backup uploaded. Downloading from S3...';
+      #   aws --endpoint-url=http://minio:9000 s3 cp s3://$S3_BUCKET/$S3_PREFIX/test_backup.sql.gz /tmp/latest_backup.sql.gz;
+      #   gunzip /tmp/latest_backup.sql.gz;
+      #   psql -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DATABASE < /tmp/latest_backup.sql;
+      #   echo 'Restore completed.'
+      #   "
+
+networks:
+  minio:
+    name: minio
+    external: true
+  pg_net:
+    name: pg_net
+    external: true
+
+

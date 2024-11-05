@@ -1,6 +1,0 @@
----
-- name: Hardening
-  hosts: all
-  gather_facts: true
-  roles:
-    - hardening

@@ -1,0 +1,42 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+      # container_name: vaultwarden
+    environment:
+      WEBSOCKET_ENABLED: 'true'
+      SIGNUPS_ALLOWED: 'true'
+      DOMAIN: "${FULL_DOMAIN}"
+      ADMIN_TOKEN: "${ADMIN_TOKEN}"
+      SMTP_HOST: 'smtp.gmail.com'
+      SMTP_PORT: '587'
+      SMTP_USERNAME: '${SMTP_USERNAME}' # Your Gmail address
+      SMTP_PASSWORD: '${SMTP_PASSWORD}' # Your Gmail app password
+      SMTP_FROM: '${SMTP_USERNAME}' # From address, usually the same as username
+      SMTP_FROM_NAME: 'Vaultwarden' # Name to display in the email
+      SMTP_TLS: 'true' # Use TLS
+
+    volumes:
+      - vaultwarden-data:/data
+    networks:
+      - web_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == node1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.vaultwarden.entrypoints=https"
+        - "traefik.http.routers.vaultwarden.rule=Host(`${VAULT_SUBDOMAIN}.${DOMAIN}`)"
+        - "traefik.http.routers.vaultwarden.tls=true"
+        - "traefik.http.routers.vaultwarden.tls.certresolver=mycert"
+        - "traefik.http.services.vaultwarden.loadbalancer.server.port=80"
+        - "traefik.http.routers.vaultwarden.middlewares=secure@file,https-redirect"
+
+networks:
+  web_net:
+    name: web_net
+    external: true
+volumes:
+  vaultwarden-data:
+
+

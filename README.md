@@ -1,94 +1,134 @@
-# DevOps Project: Monster
+# Project Overview
 
-# Overview
+This repository contains a comprehensive setup for deploying multiple services using Docker Swarm across a 3-node cluster with Traefik as the reverse proxy. The setup includes various services such as a backup server, MinIO for storage, Vaultwarden for secure password management, PostgreSQL and Redis for data storage, a voting app, and WordPress for content management. The project is designed to streamline DevOps tasks and automate service deployments in a distributed environment.
 
-Welcome to the Monster repository, a comprehensive solution designed for deploying and managing a Docker Swarm-based application. This project is part of a DevOps class led by [Mr. Ahmad Rafiee](https://github.com/AhmadRafiee) and focuses on practical, hands-on experience with modern DevOps tools and practices.
+## Service Overview
 
-This repository contains the infrastructure code and configurations necessary to deploy [example-voting-app](https://github.com/dockersamples/example-voting-app) as a multi-service application using Docker Swarm. It includes Docker Compose files, service definitions, and scripts for automated deployment and management.
-
-# Features
-
--   **Docker Swarm Deployment**: Utilize Docker Swarm for deploying a distributed application.
--   **Continuous Integration and Deployment (CI/CD)**: Automated pipelines using GitLab CI/CD for building, testing, and deploying services.
--   **Security Scanning**: Integrated container scanning to ensure images are free from vulnerabilities.
--   **Automated Testing**: Automated testing to ensure code changes do not break existing functionality.
--   **Environment-Specific Deployment**: Support for deploying to different environments such as pre-production and production.
--   **Monitoring and logging**: Comprehensive monitoring and logging capabilities for insight into application performance and operational health.
-
-# Prerequisites
-
--   Docker and Docker Compose
--   GitLab account (for CI/CD)
--   Access to a Docker registry
-
-# Setup
-
-1.  Clone the repository to your local machine.
-2.  Ensure Docker Swarm is initialized on your target deployment environment.
-3.  Configure environment variables as needed for the services and CI/CD pipeline.
-
-# Deployment
-
-Deployment can be performed manually using the  `deploy.sh`  script or automatically through the GitLab CI/CD pipeline.
-
-#### Manual Deployment
-
-Run the  `deploy.sh`  script to deploy the services to a Docker Swarm:
-
-```bash
-bash -c ./deploy.sh
-```
-
-This script sets up necessary networks, deploys Traefik as a reverse proxy, sets up databases, and deploys the application stack along with monitoring and backup services.
-
-#### CI/CD Pipeline
-
-The  `.gitlab-ci.yml`  file defines the CI/CD pipeline stages:
-
--   **Build**: Builds Docker images for the application services.
--   **Test**: Runs automated tests to ensure the application is functioning correctly.
--   **Deploy**: Deploys the application to specified environments based on the pipeline configuration.
-
-# Services Overview
+This GIF provides a visual representation of the project’s structure and the interaction between services. Each component is configured to communicate securely and efficiently within the Docker Swarm network, with Traefik managing routing for each service.
 
 ![DLP](dlp.gif)
 
-#### Voting App
 
--   **Python App (Vote Service):**  A Flask-based web application allowing users to vote between two options. It's deployed with Docker and scales across multiple instances for high availability.
--   **Node.js App (Result Service):**  A Node.js application that displays the voting results in real time. It queries the PostgreSQL database and presents an interface with live updates using WebSockets.
--   **.NET App (Worker Service):**  A .NET Core application responsible for processing votes stored in Redis and updating the PostgreSQL database with the tally. It acts as a bridge between the vote queue and the database.
+### Services Included
 
-#### Data Storage and Caching
+1. **Traefik**: Manages routing for all services, with HTTPS enabled for secure connections.
+2. **MinIO**: Object storage service, accessible via Traefik, useful for storing backups and other files.
+3. **Vaultwarden**: Secure password management solution, routed through Traefik for secure access.
+4. **Backup Server**: Handles scheduled backups, connecting to MinIO for storage and PostgreSQL for database backups.
+5. **Vote Stack**: A voting application stack that includes services like Vote, Result, Worker, and Redis.
+6. **Redis**: Separate Redis service for caching and session management within the voting app.
+7. **PostgreSQL**: Database stack for managing persistent data needs.
+8. **MariaDB (for WordPress)**: Database stack used specifically for the WordPress service.
+9. **WordPress**: Content management system for building a website or blog.
+10. **Semaphore**: CI/CD solution for automating Ansible deployments.
 
--   **PostgreSQL:**  Configured with replication for high availability and data persistence. It stores the final voting results.
--   **Redis:**  Utilized for caching and as a temporary store for votes before they are processed by the worker service. It's set up with replication for resilience and HAProxy for separating read and write connections, optimizing performance and reliability.
+Each service is configured to work within Docker Swarm and is isolated within its own network to maintain security and organization.
 
-#### Load Balancing and Reverse Proxy
+## Project Structure
 
--   **HAProxy:**  Manages Redis connections by directing write operations to the master node and read operations to slave nodes, ensuring efficient load distribution and fault tolerance.
--   **Traefik:**  Serves as the entry point to the application, routing and balancing incoming HTTP requests to the appropriate services. It's configured for automatic SSL termination and integrates with Let's Encrypt for certificate management.
+```
+.
+├── ansible/
+│   └── hardening/            # Ansible hardening scripts for server security
+├── backup-server/            # Contains backup service configurations
+├── minio/                    # Configuration for MinIO service
+├── semaphore/                # Semaphore CI/CD setup
+├── traefik/                  # Traefik configurations and certificates
+├── trivy/                    # Security scanning configurations
+├── vault/                    # Vaultwarden setup for password management
+├── voting-app/               # Voting application with Redis, PostgreSQL, and Vote/Result services
+├── wordpress/                # WordPress and MariaDB stack
+└── deploy.sh                 # Main deployment script for all services
+```
 
-#### Object Storage
+## Prerequisites
 
--   **MinIO:**  An S3-compatible object storage service used for storing backups and logs. It provides a resilient and accessible storage solution that integrates with the rest of the infrastructure for backup operations and log storage.
+To deploy this project, you need a Docker Swarm cluster with **three nodes** set up. Ensure Docker is installed on each node and Swarm is initialized. Follow these steps:
 
-#### Monitoring and Logging
+### 1. Set Up Docker on Each Node
 
--   **Prometheus:**  Collects and stores metrics from the various services and infrastructure components. It's configured for scraping metrics endpoints and storing time-series data.
--   **Grafana:**  Visualizes the metrics collected by Prometheus through dashboards, offering insights into the application and infrastructure performance.
--   **Mimir:**  Serves as a scalable, long-term storage solution for Prometheus metrics, configured with clustering to handle Prometheus remote write requests efficiently.
--   **Loki:**  Aggregates and stores logs from all services, providing a centralized logging solution that integrates with Grafana for log visualization.
--   **Promtail:**  Installed on each node, it tails logs and forwards them to Loki, ensuring that logs from all services are collected and available for analysis.
--   **Pushgateway:**  Allows ephemeral and batch jobs to expose their metrics to Prometheus. It's used for capturing metrics from jobs that do not run long enough to be scraped.
--   **Alertmanager:**  Manages alerts generated by Prometheus, handling deduplication, grouping, and routing of alerts to the correct receiver while ensuring notifications are sent out.
-#### Backup Solution
-
-- **Restic:** Utilized for backing up critical data, including PostgreSQL databases. Configured to store backups in MinIO, providing secure and efficient data storage and recovery capabilities. Restic is integrated into the infrastructure to automate backup processes, ensuring data integrity and availability.
-
-This comprehensive setup ensures high availability, resilience, and scalability of the voting application, while providing deep insights into its performance and operational health through advanced monitoring and logging capabilities.
+Install Docker on each of your nodes (e.g., `node1`, `node2`, and `node3`). Ensure that each node is reachable over the network and that they can communicate with each other.
 
 
-# Contributing
+### 2. Initialize Docker Swarm on the Manager Node
 
-Contributions are welcome! Please read our contributing guidelines for how to propose changes to this project.
+On the main (manager) node (e.g., `node1`), initialize Docker Swarm:
+
+```bash
+docker swarm init --advertise-addr <MANAGER-IP>
+```
+
+Replace `<MANAGER-IP>` with the IP address of the manager node.
+
+### 3. Join Worker Nodes to the Swarm
+
+On `node1`, Docker will provide a `docker swarm join` command with a token. Run this command on each worker node (e.g., `node2` and `node3`) to join them to the Swarm cluster.
+
+Example:
+
+```bash
+docker swarm join --token <SWARM-TOKEN> <MANAGER-IP>:2377
+```
+
+Replace `<SWARM-TOKEN>` and `<MANAGER-IP>` with the values provided by the `docker swarm init` command.
+
+### 4. Verify Swarm Nodes
+
+On the manager node (`node1`), check that all nodes have joined the Swarm successfully:
+
+```bash
+docker node ls
+```
+
+You should see all three nodes listed, with `node1` as the leader and `node2` and `node3` as workers.
+
+### 5. Set Up Overlay Network
+
+The `deploy.sh` script will automatically create the necessary overlay networks for inter-service communication. Ensure that the `web_net`, `minio_net`, and `pg_net` networks are created across the Swarm.
+
+## Deployment
+
+### Step-by-Step Guide to Deploying the Project
+
+The entire project can be deployed using the `deploy.sh` script, which handles the setup for all services in a predefined order. This script creates the necessary Docker overlay networks, loads environment variables, and deploys each service stack sequentially across the 3-node Swarm cluster.
+
+To deploy the project, follow these steps:
+
+1. **Run the Deployment Script**:
+    Execute the following command in the root directory to deploy all services:
+    ```bash
+    ./deploy.sh
+    ```
+
+   The script will:
+   - Create necessary networks (`web_net`, `minio_net`, `pg_net`).
+   - Source environment files and deploy each service stack (e.g., `traefik`, `minio`, `vault`, `backup`, etc.).
+   - Deploy each stack sequentially, setting up Traefik as the main reverse proxy to handle HTTPS routing for all services.
+
+2. **Verify Services**:
+   After the script completes, use `docker stack ls` on the manager node to check that all services are running. You can also view detailed service information with:
+   ```bash
+   docker service ls
+   ```
+
+3. **Access Services**:
+   Each service is accessible via its designated subdomain (e.g., `https://vault.devops.harimi.ir` for Vaultwarden) as configured in Traefik.
+
+## Individual Service Documentation
+
+Each service has a dedicated README.md in its directory with more detailed instructions and configuration notes:
+- **[Ansible Hardening](ansible/hardening/README.md)**
+- **[Backup Server](backup-server/README.md)**
+- **[MinIO](minio/README.md)**
+- **[Semaphore CI/CD](semaphore/README.md)**
+- **[Traefik](traefik/README.md)**
+- **[Trivy](trivy/README.md)**
+- **[Vaultwarden](vault/README.md)**
+- **[Voting App](voting-app/README.md)**
+- **[WordPress](wordpress/README.md)**
+
+Refer to each README file for environment variable configurations, network details, and specific setup instructions.
+
+---
+
+This documentation provides a comprehensive guide for setting up, deploying, and understanding each component in your multi-node Docker Swarm project. Each section is crafted to ensure ease of deployment and maintenance within a distributed environment.

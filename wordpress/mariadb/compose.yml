@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  galera-node1:
+    image: bitnami/mariadb-galera:latest
+    environment:
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_GALERA_CLUSTER_NAME=${MARIADB_GALERA_CLUSTER_NAME}
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://
+      - MARIADB_GALERA_MARIABACKUP_USER=${MARIADB_GALERA_MARIABACKUP_USER}
+      - MARIADB_GALERA_MARIABACKUP_PASSWORD=${MARIADB_GALERA_MARIABACKUP_PASSWORD}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_GALERA_FORCE_SAFETOBOOTSTRAP=yes  # Force bootstrap for node1
+    networks:
+      - galera-network
+    volumes:
+      - galera-node1-data:/bitnami/mariadb
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == node1
+
+  galera-node2:
+    image: bitnami/mariadb-galera:latest
+    environment:
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_GALERA_CLUSTER_NAME=${MARIADB_GALERA_CLUSTER_NAME}
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://galera-node1,galera-node2,galera-node3
+      - MARIADB_GALERA_MARIABACKUP_USER=${MARIADB_GALERA_MARIABACKUP_USER}
+      - MARIADB_GALERA_MARIABACKUP_PASSWORD=${MARIADB_GALERA_MARIABACKUP_PASSWORD}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+    networks:
+      - galera-network
+    volumes:
+      - galera-node2-data:/bitnami/mariadb
+    deploy:
+      replicas: 0
+      placement:
+        constraints:
+          - node.hostname == node-2
+
+  galera-node3:
+    image: bitnami/mariadb-galera:latest
+    environment:
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_GALERA_CLUSTER_NAME=${MARIADB_GALERA_CLUSTER_NAME}
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://galera-node1,galera-node2,galera-node3
+      - MARIADB_GALERA_MARIABACKUP_USER=${MARIADB_GALERA_MARIABACKUP_USER}
+      - MARIADB_GALERA_MARIABACKUP_PASSWORD=${MARIADB_GALERA_MARIABACKUP_PASSWORD}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+    networks:
+      - galera-network
+    volumes:
+      - galera-node3-data:/bitnami/mariadb
+    deploy:
+      replicas: 0
+      placement:
+        constraints:
+          - node.hostname == node3
+
+networks:
+  galera-network:
+    driver: overlay
+
+volumes:
+  galera-node1-data:
+  galera-node2-data:
+  galera-node3-data:

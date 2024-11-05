@@ -1,0 +1,45 @@
+version: '3.8'
+
+volumes:
+  ws_data: 
+    driver: local
+
+services:
+  wordpress:
+    image: wordpress:latest
+    environment:
+      WORDPRESS_DB_HOST: proxy:3306  # Connect to HAProxy for load balancing
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+    volumes:
+      - ws_data:/var/www/html
+    networks:
+      - web_net
+      - internal-network
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == node-2
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=web_net"
+        - "traefik.http.routers.wordpress.rule=Host(`${WP_SUB}.${DOMAIN}`)"
+        - "traefik.http.routers.wordpress.entrypoints=http"
+        - "traefik.http.routers.wordpress-secure.middlewares=secure@file,https-redirect"
+        - "traefik.http.routers.wordpress.middlewares=https-redirect"
+        - "traefik.http.routers.wordpress-secure.entrypoints=https"
+        - "traefik.http.routers.wordpress-secure.rule=Host(`${WP_SUB}.${DOMAIN}`)"
+        - "traefik.http.routers.wordpress-secure.tls=true"
+        - "traefik.http.routers.wordpress-secure.tls.options=default"
+        - "traefik.http.routers.wordpress-secure.service=wordpress-secure-service"
+        - "traefik.http.services.wordpress-secure-service.loadbalancer.server.port=80"
+        - "traefik.http.routers.wordpress-secure.tls.certresolver=mycert"
+
+networks:
+  web_net:
+    name: web_net
+    external: true
+  internal-network:
+    external: false

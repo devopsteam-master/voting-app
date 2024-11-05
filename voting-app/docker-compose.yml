@@ -1,6 +1,5 @@
 services:
   vote:
-#   image: dockersamples/examplevotingapp_vote
     image: ${VOTE_IMAGE}
     hostname: vote-app-{{.Task.Slot}}
     command: python app.py
@@ -10,58 +9,75 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6380
     networks:
-      - traefik-net
+      - web_net
       - redis
     deploy:
-      replicas: 2
+      replicas: 3
+      placement:
+        max_replicas_per_node: 1
+
       labels:
         - "traefik.enable=true"
-        - "traefik.docker.network=traefik-net"
+        - "traefik.docker.network=web_net"
         - "traefik.http.routers.vote.entrypoints=http"
         - "traefik.http.routers.vote.rule=Host(`${VOTE_SUB}.${DOMAIN}`)"
-        - "traefik.http.routers.vote.middlewares=https-redirect"
         - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
         - "traefik.http.routers.vote-secure.entrypoints=https"
         - "traefik.http.routers.vote-secure.rule=Host(`${VOTE_SUB}.${DOMAIN}`)"
+        - "traefik.http.routers.vote-secure.middlewares=secure@file,https-redirect"
         - "traefik.http.routers.vote-secure.tls=true"
         - "traefik.http.routers.vote-secure.tls.certresolver=mycert"
         - "traefik.http.services.vote.loadbalancer.server.port=80"
 
   worker:
-#   image: dockersamples/examplevotingapp_worker
     image: ${WORKER_IMAGE}
     hostname: worker-app-{{.Task.Slot}}
     networks:
       - redis
       - pg_net
     deploy:
-      replicas: 2
+      replicas: 3
+      placement:
+        max_replicas_per_node: 1
 
   result:
-#   image: dockersamples/examplevotingapp_result
     image: ${RESULT_IMAGE}
     hostname: result-app-{{.Task.Slot}}
     networks:
-      - traefik-net
+      - web_net
       - pg_net
     deploy:
-      replicas: 1
+      replicas: 3
+      placement:
+        max_replicas_per_node: 1
       labels:
         - "traefik.enable=true"
-        - "traefik.docker.network=traefik-net"
+        - "traefik.docker.network=web_net"
         - "traefik.http.routers.result.entrypoints=http"
         - "traefik.http.routers.result.rule=Host(`${RESULT_SUB}.${DOMAIN}`)"
-        - "traefik.http.routers.result.middlewares=https-redirect"
+        - "traefik.http.routers.my-service.rule=PathPrefix(`/`)"
         - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
         - "traefik.http.routers.result-secure.entrypoints=https"
         - "traefik.http.routers.result-secure.rule=Host(`${RESULT_SUB}.${DOMAIN}`)"
+        - "traefik.http.routers.result-secure.middlewares=secure@file,https-redirect"
         - "traefik.http.routers.result-secure.tls=true"
         - "traefik.http.routers.result-secure.tls.certresolver=mycert"
         - "traefik.http.services.result.loadbalancer.server.port=80"
 
+  visualizer:
+    image: dockersamples/visualizer
+    ports:
+      - "8080:8080"
+    stop_grace_period: 30s
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
 networks:
-  traefik-net:
-    name: traefik-net
+  web_net:
+    name: web_net
     external: true
   redis:
     external: true
@@ -69,3 +85,5 @@ networks:
   pg_net:
     external: true
     name: pg_net
+
+  

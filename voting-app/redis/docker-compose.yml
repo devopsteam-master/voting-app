@@ -12,7 +12,7 @@ services:
 
   redis-slave:
     image: bitnami/redis:7.2
-    hostname: redis-slave{{.Task.Slot}}
+    hostname: redis-slave.{{.Task.Slot}}
     networks:
       - redis
     depends_on:
@@ -21,9 +21,10 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_REPLICATION_MODE=slave
       - REDIS_MASTER_HOST=redis-master
-      - REDIS_REPLICA_IP=redis-slave{{.Task.Slot}}
+      - REDIS_MASTER_PORT_NUMBER=6379
+      - REDIS_REPLICA_IP=redis-slave.{{.Task.Slot}}
     deploy:
-      replicas: 2
+      replicas: 3
       placement:
         max_replicas_per_node: 1
 
@@ -35,6 +36,7 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS=3000
       - REDIS_MASTER_HOST=redis-master
+      - REDIS_SENTINEL_FAILOVER_TIMEOUT=5000
     deploy:
       mode: global
     depends_on:
@@ -48,32 +50,47 @@ services:
         target: /usr/local/etc/haproxy/haproxy.cfg
     networks:
       - redis
-      - traefik-net
+      - web_net
+      - pg_net
+      - mariadb_galera-network
     depends_on:
       - redis-sentinel
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.docker.network=traefik-net"
+        - "traefik.docker.network=web_net"
         - "traefik.http.routers.haproxy.entrypoints=http"
         - "traefik.http.routers.haproxy.rule=Host(`${HAPROXY_SUB}.${DOMAIN}`)"
-        - "traefik.http.middlewares.web-auth.basicauth.users=${HAPROXY_AUTH_USER}:${HAPROXY_AUTH_PASS}"
-        - "traefik.http.routers.haproxy-secure.middlewares=web-auth"
-        - "traefik.http.routers.haproxy.middlewares=https-redirect"
+        - "traefik.http.middlewares.web-auth.basicauth.users=${HAPROXY_AUTH_USER}\
+          :${HAPROXY_AUTH_PASS}" #- "traefik.http.routers.haproxy-secure.middlewares=web-auth"
         - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
         - "traefik.http.routers.haproxy-secure.entrypoints=https"
-        - "traefik.http.routers.haproxy-secure.rule=Host(`${HAPROXY_SUB}.${DOMAIN}`)"
+        - "traefik.http.routers.haproxy-secure.rule=Host(`${HAPROXY_SUB}.${DOMAIN\
+          }`)"
+        - "traefik.http.routers.haproxy-secure.middlewares=secure@file,https-redi\
+          rect,web-auth"
         - "traefik.http.routers.haproxy-secure.tls=true"
+        - "traefik.http.routers.haproxy-secure.tls.options=default"
         - "traefik.http.routers.haproxy-secure.tls.certresolver=mycert"
         - "traefik.http.services.haproxy.loadbalancer.server.port=9000"
 
 networks:
   redis:
+    driver: overlay
     name: redis
     external: true
-  traefik-net:
-    name: traefik-net
+  web_net:
+    driver: overlay
+    name: web_net
     external: true
+  pg_net:
+    driver: overlay
+    name: pg_net
+    external: true
+  mariadb_galera-network:
+    name: mariadb_galera-network
+    external: true
+    driver: overlay
 
 configs:
   haproxy:

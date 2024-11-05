@@ -6,8 +6,8 @@ import random
 import json
 import logging
 
-option_a = os.getenv('OPTION_A', "Cats")
-option_b = os.getenv('OPTION_B', "Dogs")
+option_a = os.getenv('OPTION_A', "Gandom")
+option_b = os.getenv('OPTION_B', "Amoo")
 hostname = socket.gethostname()
 
 app = Flask(__name__)
@@ -18,7 +18,7 @@ app.logger.setLevel(logging.INFO)
 
 def get_redis():
     if not hasattr(g, 'redis'):
-        g.redis = Redis(host=os.getenv("REDIS_HOST","redis"), port=os.getenv("REDIS_PORT",6380), db=0, socket_timeout=5)
+        g.redis = Redis(host="redis", db=0, socket_timeout=5)
     return g.redis
 
 @app.route("/", methods=['POST','GET'])

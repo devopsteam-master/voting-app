@@ -1,0 +1,73 @@
+services:
+  pgbackups:
+    image: prodrigestivill/postgres-backup-local:16
+    volumes:
+      - pg_backup:/backups
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=${POSTGRESQL_DATABASE}
+      - POSTGRES_USER=${POSTGRESQL_DATABASE}
+      - POSTGRES_PASSWORD=${POSTGRESQL_POSTGRES_PASSWORD}
+      - POSTGRES_EXTRA_OPTS=-Z1 --schema=public --blobs
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=8080
+    networks:
+      - pg_net
+
+  backup:
+    image: mazzolino/restic
+    environment:
+      BACKUP_CRON: "15 1 * * *"
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD}
+      RESTIC_BACKUP_SOURCES: /mnt/volumes/backup.sql
+#     RESTIC_BACKUP_ARGS: -v
+      RESTIC_BACKUP_TAGS: postgres
+      TZ: Asia/Tehran
+      AWS_ACCESS_KEY_ID: ${MINIO_BACKUP_USER} 
+      AWS_SECRET_ACCESS_KEY: ${MINIO_BACKUP_PASSWORD} 
+    networks:
+      - minio
+    volumes:
+      - pg_backup:/mnt/volumes:ro
+
+  prune:
+    image: mazzolino/restic
+    environment:
+      SKIP_INIT: "true"
+      PRUNE_CRON: "0 5 4 * *"
+      RESTIC_FORGET_ARGS: --prune --keep-last 14 --keep-daily 1
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD}
+      TZ: Asia/Tehran
+      AWS_ACCESS_KEY_ID: ${MINIO_BACKUP_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_BACKUP_PASSWORD}
+    networks:
+      - minio
+
+  check:
+    image: mazzolino/restic
+    environment:
+      SKIP_INIT: "true"
+      RUN_ON_STARTUP: "false"
+      CHECK_CRON: "3 2 5 * *"
+      RESTIC_CHECK_ARGS: --read-data-subset=10%
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD}
+      TZ: Asia/Tehran
+      AWS_ACCESS_KEY_ID: ${MINIO_BACKUP_USER} 
+      AWS_SECRET_ACCESS_KEY: ${MINIO_BACKUP_PASSWORD}
+    networks:
+      - minio
+
+volumes:
+  pg_backup:
+
+networks:
+  minio:
+    external: true
+  pg_net:
+    external: true
