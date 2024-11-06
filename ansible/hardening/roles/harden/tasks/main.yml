@@ -24,8 +24,8 @@
 - name: Setup passwdpolicy
   import_tasks: passwdpolicy.yml
 
-- name: Setup dnsrecord
-  import_tasks: dnsrecord.yml
+    #- name: Setup dnsrecord
+    #  import_tasks: dnsrecord.yml
 
 - name: Setup logindefs
   import_tasks: logindefs.yml

@@ -6,13 +6,13 @@ services:
     environment:
       - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       - MARIADB_GALERA_CLUSTER_NAME=${MARIADB_GALERA_CLUSTER_NAME}
-      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://galera-node1,galera-node2,galera-node3
       - MARIADB_GALERA_MARIABACKUP_USER=${MARIADB_GALERA_MARIABACKUP_USER}
       - MARIADB_GALERA_MARIABACKUP_PASSWORD=${MARIADB_GALERA_MARIABACKUP_PASSWORD}
       - MARIADB_USER=${MARIADB_USER}
       - MARIADB_PASSWORD=${MARIADB_PASSWORD}
       - MARIADB_DATABASE=${MARIADB_DATABASE}
-      - MARIADB_GALERA_FORCE_SAFETOBOOTSTRAP=yes  # Force bootstrap for node1
+      #- MARIADB_GALERA_FORCE_SAFETOBOOTSTRAP=yes  # Force bootstrap for node1
     networks:
       - galera-network
     volumes:
@@ -39,7 +39,7 @@ services:
     volumes:
       - galera-node2-data:/bitnami/mariadb
     deploy:
-      replicas: 0
+      replicas: 1
       placement:
         constraints:
           - node.hostname == node-2
@@ -60,7 +60,7 @@ services:
     volumes:
       - galera-node3-data:/bitnami/mariadb
     deploy:
-      replicas: 0
+      replicas: 1
       placement:
         constraints:
           - node.hostname == node3
