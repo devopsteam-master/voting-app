@@ -15,8 +15,8 @@
     - role: nexus
       tags: nexus
 
-    - role: host
-      tags: host
+    #- role: host
+     # tags: host
 
     - role: docker
       tags: docker

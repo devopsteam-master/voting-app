@@ -5,3 +5,6 @@ debianـrepo_address: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] h
 debian_gpg_address: https://repo.cache.harimi.ir/repository/debian-docker-gpg-hosted/keys/docker.gpg/docker.gpg
 ubuntuـrepo_address: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://repo.cache.harimi.ir/repository/ubuntu-docker focal stable"
 ubuntu_gpg_address: https://repo.cache.harimi.ir/repository/ubuntu-docker-gpg-hosted/gpg/ubuntu-docker.gpg/ubuntu-docker.gpg
+debian_repo_apt: deb https://repo.cache.harimi.ir/repository/debian-bookworm/
+debian_repo_apt_security: deb https://repo.cache.harimi.ir/repository/bookworm-security/
+ubuntu_repo_apt: deb https://repo.cache.harimi.ir/repository/ubuntu-main

@@ -3,7 +3,7 @@ services:
     image: bitnami/postgresql-repmgr:16
     hostname: pg-{{.Task.Slot}}
     volumes:
-      - pg_data:/bitnami/postgresql
+      - pg_data:/data
     networks:
       - pg_net
     environment:
@@ -16,14 +16,19 @@ services:
       - REPMGR_PRIMARY_HOST=pg-1
       - REPMGR_PARTNER_NODES=pg-1,pg-2,pg-3
       - REPMGR_NODE_NAME=pg-{{.Task.Slot}}
+      #- REPMGR_NODE_ID={{.Task.Slot}}
       - REPMGR_NODE_NETWORK_NAME=pg-{{.Task.Slot}}
     deploy:
       replicas: 3
       placement:
+        constraints: [node.labels.pg == true ] 
         max_replicas_per_node: 1
-        constraints:
-          - node.labels.pg == true  # Replace with appropriate label on nodes designated for PostgreSQL
-
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      
   db:
     image: bitnami/pgpool:latest
     hostname: db
@@ -35,20 +40,43 @@ services:
       - PGPOOL_BACKEND_NODES=1:pg-1:5432,2:pg-2:5432,3:pg-3:5432
       - PGPOOL_SR_CHECK_USER=${POSTGRESQL_USERNAME}
       - PGPOOL_SR_CHECK_PASSWORD=${POSTGRESQL_PASSWORD}
+      - PGPOOL_HEALTH_CHECK_PERIOD=30
+      - PGPOOL_HEALTH_CHECK_MAX_RETRIES=5
+      - PGPOOL_HEALTH_CHECK_TIMEOUT=10
       - PGPOOL_ENABLE_LDAP=no
       - PGPOOL_POSTGRES_USERNAME=postgres
       - PGPOOL_POSTGRES_PASSWORD=${POSTGRESQL_POSTGRES_PASSWORD}
       - PGPOOL_ADMIN_USERNAME=${PGPOOL_ADMIN_USERNAME}
       - PGPOOL_ADMIN_PASSWORD=${PGPOOL_ADMIN_PASSWORD}
+      #- PGPOOL_ENABLE_LOAD_BALANCING=yes
+      - PGPOOL_FAILOVER_ON_BACKEND_ERROR=yes
+      - PGPOOL_FAILOVER_IF_STANDBY=yes
+      # - PGPOOL_HEARTBEAT_INTERVAL=60   
+      # - PGPOOL_HEARTBEAT_TIMEOUT=60
+      - PGPOOL_RETRY_INTERVAL=20
     healthcheck:
       test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      replicas: 1  
+      placement:
+        constraints:
+          - node.role == manager 
+      update_config:
+        parallelism: 1
+        delay: 20s
+      restart_policy:
+        condition: on-failure
 
+   
 volumes:
   pg_data:
     name: pg_data
+
+
+
 
 networks:
   pg_net:
