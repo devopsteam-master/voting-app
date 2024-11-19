@@ -1,0 +1,22 @@
+stages:
+  - build
+  - test
+  - deploy
+
+job1-build-image:
+  stage: build
+  image: docker:latest
+  tags: 
+    - amoo
+  before_script:
+    - echo "this is first test"
+  script:
+    - "my name is masteroogway"
+  after_script:
+    - "clean up"
+
+
+
+
+
+

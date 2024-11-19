@@ -1,0 +1,114 @@
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:${GITLAB_IMAGE_TAG}
+    hostname: '{GITLAB_EXTERNAL_URL}'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        # Set external url
+        external_url '${GITLAB_EXTERNAL_URL}'
+
+        # Nginx Configuration
+        nginx['real_ip_trusted_addresses'] = ['10.0.1.0/24', '172.17.0.0/16', '172.18.0.0/16', '172.19.0.0/16', '172.20.0.0/16', '192.168.1.0/24']  
+        nginx['real_ip_header'] = 'X-Forwarded-For'
+        nginx['real_ip_recursive'] = 'on'
+        nginx['proxy_set_headers'] = {
+          "Host" => "$$http_host",
+          "X-Real-IP" => "$$remote_addr",
+          "X-Forwarded-For" => "$$proxy_add_x_forwarded_for",
+          "X-Forwarded-Proto" => "https",
+          "X-Forwarded-Ssl" => "on"
+        }
+
+        # Nginx Configuration
+        nginx['client_max_body_size'] = '10240m'
+        nginx['gzip_enabled'] = true
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        nginx['proxy_cache'] = 'gitlab'
+        nginx['hide_server_tokens'] = 'on'
+        nginx['http2_enabled'] = true
+
+        # gitlab backup config
+        gitlab_rails['initial_root_password'] = '${GITLAB_ROOT_PASSWORD}'
+        gitlab_rails['display_initial_root_password'] = "false"
+        gitlab_rails['store_initial_root_password'] = "false"
+        gitlab_rails['manage_backup_path'] = true
+        gitlab_rails['backup_path'] = "/var/opt/gitlab/backups"
+        gitlab_rails['backup_archive_permissions'] = 0644
+        gitlab_rails['backup_keep_time'] = 604800
+        gitlab_rails['env'] = {"SKIP" => "registry"}
+        gitlab_rails['smtp_enable'] = true
+        gitlab_rails['smtp_address'] = '${GITLAB_SMTP_ADDR}'
+        gitlab_rails['smtp_port'] = '${GITLAB_SMTP_PORT}'
+        gitlab_rails['smtp_user_name'] = '${GITLAB_SMTP_USER}'
+        gitlab_rails['smtp_password'] = '${GITLAB_SMTP_PASSWORD}'
+        gitlab_rails['smtp_domain'] = '${GITLAB_SMTP_ADDR}'
+        gitlab_rails['smtp_authentication'] = "login"
+        gitlab_rails['smtp_enable_starttls_auto'] = true
+        gitlab_rails['gitlab_shell_ssh_port'] = 22
+
+        # configure a failed authentication band
+        gitlab_rails['rack_attack_git_basic_auth'] = {
+          'enabled' => true,
+          'ip_whitelist' => ["127.0.0.1"],
+          'maxretry' => 5,
+          'findtime' => 60,
+          'bantime' => 3600
+        }
+        gitlab_rails['rate_limit_requests_per_period'] = 5
+        gitlab_rails['rate_limit_period'] = 60
+
+        
+        # Disable unused services
+        prometheus['enable'] = false
+        alertmanager['enable'] = false
+        pgbouncer_exporter['enable'] = false
+        puma['exporter_enabled'] = false
+        gitlab_exporter['enable'] = false
+        node_exporter['enable'] = false
+        sidekiq['metrics_enabled'] = false
+        redis_exporter['enable'] = false
+        postgres_exporter['enable'] = false
+    networks:
+      - web_net
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=web_net"
+        - "traefik.http.routers.gitlab.entrypoints=http"
+        - "traefik.http.routers.gitlab.rule=Host(`${GITLAB_SUB}.${DOMAIN}`)"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.gitlab-secure.entrypoints=https"
+        - "traefik.http.routers.gitlab-secure.rule=Host(`${GITLAB_SUB}.${DOMAIN}`)"
+        - "traefik.http.routers.gitlab-secure.middlewares=secure@file,https-redirect"
+        - "traefik.http.routers.gitlab-secure.tls=true"
+        - "traefik.http.routers.gitlab-secure.tls.certresolver=mycert"
+        - "traefik.http.services.gitlab.loadbalancer.server.port=80"
+        
+      replicas: 1
+    volumes:
+      - gitlab_backup:/var/opt/gitlab/backups
+      - gitlab_data:/var/opt/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_config:/etc/gitlab
+        # ports:
+      #      - "2222:22"
+networks:
+  web_net:
+    driver: overlay
+    name: web_net
+    external: true
+    
+
+
+volumes:
+  gitlab_backup:
+    name: gitlab_backup
+  gitlab_data:
+    name: gitlab_data
+  gitlab_logs:
+    name: gitlab_logs
+  gitlab_config:
+    name: gitlab_config
+     
