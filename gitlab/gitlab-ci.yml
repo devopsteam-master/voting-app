@@ -3,6 +3,10 @@ stages:
   - test
   - deploy
 
+default:
+  before_script:
+    - echo "Logging into GitLab Registry..."
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
 job1-build-image:
   stage: build
   image: docker:latest
