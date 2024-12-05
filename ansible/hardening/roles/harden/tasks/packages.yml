@@ -13,13 +13,20 @@
       #update_cache: true
   loop:
     - curl
+    - wget
     - vim
     - git
+    - tree
+    - bash-completion
+    - tmux
     - fail2ban
     - lynis
     - iptables-persistent
     - ntp
     - debsums
+    - dkms
+    - linux-headers-$(uname -r)
+    - build-essential
     - apt-show-versions
     - apt-listchanges
     - auditd
@@ -29,6 +36,13 @@
     - aptitude
     - libpam-tmpdir
     - network-manager
+    - python-is-python3
+    - python3.11-venv
+    - python3-systemd
+    - zsh-autosuggestions
+    - zsh-syntax-highlighting
+    - zsh
+    
 
 - name: run aptitued purge
   ansible.builtin.command:

@@ -42,7 +42,7 @@
     - curl
     - software-properties-common
     - gnupg
-  tags: install
+  tags: install-req
 
 
 - name: Add apt key for Docker
@@ -53,7 +53,7 @@
   with_items: "{{ dockerkeys | selectattr('os', 'equalto', ansible_facts['distribution']) | list }}"
   loop_control:
     label: " Adding Docker GPG Key"
-  tags: install
+  tags: add-key
 
   vars:
       dockerkeys:
@@ -67,7 +67,8 @@
   loop: "{{ repositories | selectattr('os', 'equalto', ansible_facts['distribution']) | list }}"
   loop_control:
     label: " Adding Docker Repository"
-  tags: install
+  tags: add-key
+
   
   vars:
     repositories:
@@ -97,7 +98,6 @@
   ansible.builtin.copy:
     content: |
       {
-       "live-restore" : true, 
        "insecure-registries" : ["https://{{ docker_registry }}"],
        "registry-mirrors": ["https://{{ docker_registry }}"],
        "metrics-addr" : "0.0.0.0:9323",

@@ -63,9 +63,8 @@ services:
       - 4.2.2.4
     deploy:
       replicas: 1
-      placement:
-        constraints:
-        - node.labels.traefik_node == true # فقط روی نودهایی با لیبل 'traefik_node=true' اجرا شود
+
+        
       labels:
         - "traefik.enable=true"
         - "traefik.docker.network=web_net"

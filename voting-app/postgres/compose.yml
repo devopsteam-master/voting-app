@@ -29,6 +29,12 @@ services:
       restart_policy:
         condition: on-failure
       
+
+    configs:
+      - source: my_config
+        target: /traefik/config.yml
+
+
   db:
     image: bitnami/pgpool:latest
     hostname: db
@@ -75,6 +81,10 @@ volumes:
   pg_data:
     name: pg_data
 
+
+configs:
+  my_config:
+    external: true
 
 
 

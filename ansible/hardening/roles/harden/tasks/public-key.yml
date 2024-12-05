@@ -23,16 +23,22 @@
 #    state: present
 #
 
+
 - name: Check if SSH key pair exists
+  # become: true
+  # become_user: "{{ ansible_user }}"
   stat:
     path: /home/{{ lookup('env', 'USER') }}/.ssh/id_ed25519
   register: ssh_key_exists
   delegate_to: localhost
 
+  tags: publickey
+
 - name: Generate SSH key pair on control node (if not exists)
   delegate_to: localhost
   command: ssh-keygen -t ed25519 -f /home/{{ lookup('env', 'USER') }}/.ssh/id_ed25519 -N ''
   when: not ssh_key_exists.stat.exists
+  tags: publickey
 
 - name: Read the generated public key
   delegate_to: localhost
@@ -40,10 +46,11 @@
     src: /home/{{ lookup('env', 'USER') }}/.ssh/id_ed25519.pub
   register: public_key
   when: ssh_key_exists.stat.exists or ssh_key_exists.changed
+  tags: publickey
 
 - name: Add public key to remote authorized_keys
   authorized_key:
     user: "{{ ansible_user }}"
     key: "{{ public_key.content | b64decode }}"
     state: present
-      
+  tags: publickey    

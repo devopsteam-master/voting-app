@@ -3,8 +3,8 @@
 - name: install packages
   import_tasks: packages.yml
 
-- name: Setup SSH configuration
-  import_tasks: ssh.yml
+# - name: Setup SSH configuration
+#   import_tasks: ssh.yml
 
 - name: Setup fail2ban
   import_tasks: fail2ban.yml
@@ -35,7 +35,9 @@
 
 - name: Include ssh-inventory
   import_tasks: change-ssh-inventory.yml
-
-    
+ 
 - name: Lynis Reporty
   import_tasks: lynis.yml
+
+- name: Setup oh-my-zsh
+  import_tasks: ohmyzsh.yml

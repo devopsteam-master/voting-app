@@ -24,8 +24,11 @@ COMMIT
 :CHECK_OUTPUT - [0:0]
 
 -A INPUT -j CHECK_INPUT
+-A INPUT -j DROP
 -A OUTPUT -j CHECK_OUTPUT
-
+-A OUTPUT -j DROP
+-A CHECK_INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-I CHECK_INPUT -p tcp --dport 1024:65535 -j ACCEPT
 
 {% if iptables.network_adapter_access is defined %}
 {% for net in iptables.network_adapter_access %}
@@ -59,7 +62,7 @@ COMMIT
 {% endfor %}
 {% endif %}
 
--A CHECK_INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
 -A CHECK_OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 
 -A CHECK_OUTPUT -j ACCEPT

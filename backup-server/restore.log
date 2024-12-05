@@ -8,3 +8,11 @@
 /bin/sh: 1: /opt/infra-automation/backup-server/restore_script.sh: not found
 /bin/sh: 1: /opt/infra-automation/backup-server/restore_script.sh: not found
 /bin/sh: 1: /home/root/opt/infra-automation/backup-server/restore_script.sh: not found
+/bin/sh: 1: /home/root/opt/infra-automation/backup-server/restore_script.sh: not found
+/bin/sh: 1: /opt/infra-automation/backup-server/restore_script.sh: not found
+/bin/sh: 1: /home/root/opt/infra-automation/backup-server/restore_script.sh: not found
+/bin/sh: 1: /opt/infra-automation/backup-server/restore_script.sh: not found
+/bin/sh: 1: /opt/infra-automation/backup-server/restore_script.sh: not found
+/bin/sh: 1: /home/root/opt/infra-automation/backup-server/restore_script.sh: not found
+/bin/sh: 1: /opt/infra-automation/backup-server/restore_script.sh: not found
+/bin/sh: 1: /home/root/opt/infra-automation/backup-server/restore_script.sh: not found

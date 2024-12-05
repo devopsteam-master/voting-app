@@ -4,5 +4,5 @@ docker stack rm postgres-stack
 
 set -a
 source .env
-docker stack deploy -c compose.yml --detach=true postgres-stack
+docker stack deploy -c docker-compose.yml --detach=true postgres-stack
 set +a

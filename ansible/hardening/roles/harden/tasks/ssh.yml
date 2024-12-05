@@ -4,6 +4,11 @@
     src: sshd.j2
     dest: /etc/ssh/sshd_config
   notify: Restart_SSH
+  tags: ssh
+
+- name: Restart_SSH
+  meta: flush_handlers
+  tags: ssh
 
 - name: Copy banner file to destination
   ansible.builtin.copy:
@@ -11,4 +16,4 @@
     dest: /etc/issue
     mode: '0644'
   notify: Restart_SSH    
-
+  tags: ssh

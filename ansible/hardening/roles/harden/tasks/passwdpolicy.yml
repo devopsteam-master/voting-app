@@ -1,6 +1,6 @@
 - name: Force update PAM configuration non-interactively
   ansible.builtin.shell: "DEBIAN_FRONTEND=noninteractive pam-auth-update --force"
-  become: yes
+  become: true
 
 - name: Copy passwdpolicy file to destination
   ansible.builtin.copy:

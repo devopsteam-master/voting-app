@@ -1,8 +1,49 @@
-- name: Make fail2ban configuration file.
+# tasks file for fail2ban
+---
+- name: install
+  package:
+    name: "{{ item }}"
+    state: "{{ apt_install_state | default('latest') }}"
+  with_items: "{{ fail2ban_dependencies }}"
+  tags: fail2ban
+  
+- name: update configuration file - /etc/fail2ban/fail2ban.local
+  become: true
   template:
-    src: fail2ban.j2
+    src: etc/fail2ban/fail2ban.local.j2
+    dest: /etc/fail2ban/fail2ban.local
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart fail2ban
+  tags: fail2ban
+
+- name: update configuration file - /etc/fail2ban/jail.local
+  become: true
+  template:
+    src: etc/fail2ban/jail.local.j2
     dest: /etc/fail2ban/jail.local
-  notify: Restart_Fail2ban
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart fail2ban
+  tags: fail2ban
+
+- name: start and enable service
+  become: true
+  systemd:
+    name: fail2ban
+    state: started
+    enabled: true
+  tags: fail2ban
+  when: ansible_service_mgr == 'systemd'
 
 
-
+- name: start and enable service
+  become: true
+  service:
+    name: fail2ban
+    state: started
+    enabled: true
+  tags: fail2ban
+  when: ansible_service_mgr != 'systemd'

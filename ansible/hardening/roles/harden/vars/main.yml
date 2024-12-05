@@ -3,9 +3,9 @@
 sshd_config:
   #  PermitRootLogin: "without-password"
   #  ListenAddress: "0.0.0.0."
-  #  PasswordAuthentication: "no"
-  Port: "3232"
-  # AllowUsers:
+  PasswordAuthentication: "no"
+  Port: "23233"
+  AllowUsers: "{{ ansible_user }}"
   # AllowGroups:
 fail2ban:
   backend: "systemd"
@@ -13,16 +13,18 @@ fail2ban:
   findtime: "15m"
   maxretry: "4"
 
+# vars file for fail2ban
+fail2ban_dependencies:
+  - fail2ban
+  
 iptables:
   network_adapter_access:
     - eth0
-    - wlan0
 
   tcp_port_access:
     - 80    # HTTP
     - 443   # HTTPS
-    - 8000  # Custom port
-    - 8080
+    - 23234 # Gitlab SSH
       #udp_port_access:
     #- 53    # DNS
     #- 123   # NTP
@@ -48,9 +50,9 @@ auditd:
 my_user: "root"
 ssh_key_file: "/home/user/.ssh/id_rsa.pub"
 
-CLOUDFLARE_API_TOKEN: 'O4f-hl5dpYu_EAkKURl0hkf3e84gwXchHUCm1zSD' 
-Domain_Name: "webmoney.ir"  
-Record_Name: "test1"
+# CLOUDFLARE_API_TOKEN: 'O4f-hl5dpYu_EAkKURl0hkf3e84gwXchHUCm1zSD' 
+# Domain_Name: "webmoney.ir"  
+# Record_Name: "test1"
 
   #cloudflare_token: "{{ lookup('env', 'CLOUDFLARE_API_TOKEN') }}"  # API توکن
   #zone_name: "webmoney.ir"  # نام دامنه

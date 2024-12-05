@@ -4,3 +4,4 @@
     src: iptables.j2
     dest: /etc/iptables/rules.v4
   notify: Restart_iptables
+  tags: iptables

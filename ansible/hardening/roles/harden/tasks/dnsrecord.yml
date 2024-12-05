@@ -1,14 +1,14 @@
----
-- name: Create DNS records in Cloudflare using API token
-  community.general.cloudflare_dns:
-    zone: "{{ zone_name }}"         # نام دامنه
-    type: "{{ item.type }}"         # نوع رکورد (A, CNAME, MX, ...)
-    name: "{{ item.name }}"         # نام رکورد
-    content: "{{ item.value }}"     # مقدار رکورد (IP یا CNAME)
-    api_token: "{{ CLOUDFLARE_API_TOKEN }}"  # توکن API
-  loop: "{{ dns_records }}"         # حلقه برای ساخت رکوردهای متعدد
-  delegate_to: localhost
-  tags: loop_record
+# ---
+# - name: Create DNS records in Cloudflare using API token
+  # community.general.cloudflare_dns:
+    # zone: "{{ zone_name }}"         # نام دامنه
+    # type: "{{ item.type }}"         # نوع رکورد (A, CNAME, MX, ...)
+    # name: "{{ item.name }}"         # نام رکورد
+    # content: "{{ item.value }}"     # مقدار رکورد (IP یا CNAME)
+    # api_token: "{{ CLOUDFLARE_API_TOKEN }}"  # توکن API
+  # loop: "{{ dns_records }}"         # حلقه برای ساخت رکوردهای متعدد
+  # delegate_to: localhost
+  # tags: loop_record
 
 # name: Create a record using api token
  # community.general.cloudflare_dns:

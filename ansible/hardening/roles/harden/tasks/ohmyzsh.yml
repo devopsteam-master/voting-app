@@ -1,0 +1,49 @@
+- name: clone Oh My Zsh repository
+  git:
+    repo: https://github.com/ohmyzsh/ohmyzsh.git
+    dest: /home/{{ ansible_user }}/.oh-my-zsh
+    version: master
+    force: yes
+    clone: yes
+    update: yes
+  become_user: "{{ ansible_user }}"
+  tags: plugin
+  
+- name: clone plugin zsh-autosuggestions
+  git:
+    repo: https://github.com/zsh-users/zsh-autosuggestions.git
+    dest: /home/{{ ansible_user }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+    clone: yes
+    update: yes
+  become_user: "{{ ansible_user }}"
+  tags: plugin
+
+- name: clone plugin zsh-syntax-highlighting
+  git:
+    repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
+    dest: /home/{{ ansible_user }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+    clone: yes
+    update: yes
+  become_user: "{{ ansible_user }}"
+  tags: plugin
+
+- name: add plugin and setting into the .zshrc
+  ansible.builtin.copy:
+    src: zshrc
+    dest: /home/{{ ansible_user }}/.zshrc
+  become_user: "{{ ansible_user }}"
+  tags: plugin
+
+- name: apply setting .zshrc
+  shell: source /home/{{ ansible_user }}/.zshrc
+  args:
+    executable: /bin/bash
+  become_user: "{{ ansible_user }}"
+  tags: plugin
+
+- name: set default shell to zsh for user
+  user:
+    name: "{{ ansible_user }}"
+    shell: /bin/zsh
+  become: true
+  tags: plugin
